@@ -1,25 +1,24 @@
 FROM debian:latest
 
+RUN echo "deb http://ftp.debian.org/debian experimental main" | tee /etc/apt/sources.list
+
+# add a user, update to latest glibc
 RUN useradd -m user \
     && apt-get update \
-    && apt-get install nano -y
+    && apt-get -t experimental install -y libc6 libc6-dev libc6-dbg
 
 USER user
 
 # add dependencies (staking-deposit-cli, sw operator cli, and nimbus)
-ADD --chown=user:user https://github.com/ethereum/staking-deposit-cli/releases/download/v2.7.0/staking_deposit-cli-fdab65d-linux-amd64.tar.gz  /home/user/bin/deposit-cli.tar.gz
-ADD --chown=user:user https://github.com/stakewise/v3-operator/releases/latest/download/operator-v0.3.3-linux-amd64.tar.gz /home/user/bin/
+ADD --chown=user:user https://github.com/nodeset-org/staking-deposit-cli/releases/download/v2.7.0-exit-messages/staking-deposit-cli-linux-amd64 /home/user/bin/deposit
+ADD --chown=user:user https://github.com/stakewise/v3-operator/releases/download/v0.3.3/operator-v0.3.3-linux-amd64.tar.gz /home/user/bin/
 ADD --chown=user:user https://github.com/status-im/nimbus-eth2/releases/download/v23.9.1/nimbus-eth2_Linux_amd64_23.9.1_cfa0268d.tar.gz /home/user/bin/nimbus.tar.gz
 
 WORKDIR /home/user/bin
 
-# extract the eth deposit binary
-RUN tar -xf deposit-cli.tar.gz \
-    && cp staking_deposit-cli-fdab65d-linux-amd64/deposit deposit \
-    && rm -dr staking_deposit-cli-fdab65d-linux-amd64* \
-    && rm deposit-cli.tar.gz
+RUN chmod +x deposit
 
-# extract the stakewise binary
+# extract the stakewise operator binary
 RUN tar -xf operator-v0.3.3-linux-amd64.tar.gz \
     && cp operator-v0.3.3-linux-amd64/operator operator \
     && rm -dr operator-v0.3.3-linux-amd64* \
@@ -27,12 +26,9 @@ RUN tar -xf operator-v0.3.3-linux-amd64.tar.gz \
 
 # extract nimbus
 RUN tar -xf nimbus.tar.gz \
-    && mv nimbus-eth2_Linux_amd64_23.9.1_cfa0268d nimbus
+    && mv nimbus-eth2_Linux_amd64_23.9.1_cfa0268d nimbus \
+    && rm nimbus.tar.gz
 
 # eth deposit tool requires these environment vars
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-
-# --non_interactive flag is broken so this has to be done inside the container manually
-# see https://github.com/ethereum/staking-deposit-cli/issues/250
-# RUN ./deposit --non_interactive --language English new-mnemonic --keystore_password asdfasdf --num_validators 10 --chain goerli --eth1_withdrawal_address 0x6dEd62De7AD24d998482c32D9c3D6f9b8A121f80 --mnemonic_language English
