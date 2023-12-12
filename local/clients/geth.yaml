@@ -1,0 +1,26 @@
+services:
+  geth:
+    image: "ethereum/client-go:stable"
+    command: --$NETWORK
+      --http
+      --http.addr 0.0.0.0
+      --http.corsdomain=*
+      --http.vhosts=*
+      --http.api=web3,eth,net,engine
+      --authrpc.addr 0.0.0.0
+      --authrpc.port $ECRPCPORT
+      --authrpc.jwtsecret /tmp/jwtsecret
+    env_file: "$DATA_DIR/nodeset.env"
+    volumes:
+      - "$DATA_DIR/tmp:/tmp"
+      - "$DATA_DIR/geth-data:/root/.ethereum"
+    ports:
+      # external peering
+      - "$ECPORT/tcp"
+      - "$ECPORT/udp"
+      # connection to CC
+      - "$ECRPCPORT/tcp"
+      - "$ECRPCPORT/udp"
+      # http API
+      - "$ECAPIPORT/tcp"
+      - "$ECAPIPORT/udp"

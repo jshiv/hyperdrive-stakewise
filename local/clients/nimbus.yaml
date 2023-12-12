@@ -1,0 +1,26 @@
+services:
+  nimbus:
+    image: "statusim/nimbus-eth2:amd64-latest"
+    command: -d=/home/user/data
+      --network=$NETWORK
+      --web3-url="$ECNAME:$ECRPCPORT"
+      --jwt-secret=/tmp/jwtsecret
+      --log-level=info
+      --enr-auto-update:true
+      --rest
+      --rest-port="$CCAPIPORT"
+      --rest-address="0.0.0.0"
+      --rest-allow-origin=*
+    env_file: "$DATA_DIR/nodeset.env"
+    volumes:
+      - "$DATA_DIR/nimbus-data:/home/user/data"
+      - "$DATA_DIR/tmp:/tmp"
+    ports:
+      # external peering
+      - "$CCPORT/tcp"
+      - "$CCPORT/udp"
+      # API
+      - "$CCAPIPORT/tcp"
+      - "$CCAPIPORT/udp"
+    depends_on:
+      - $ECNAME
