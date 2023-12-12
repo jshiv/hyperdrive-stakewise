@@ -13,7 +13,7 @@ if [ "$NETWORK" = "mainnet" ]; then
 
     if [ "$answer" != "I UNDERSTAND" ]; then 
         echo Cancelled
-        exit
+        exit 1
     fi
 
     echo "THIS IS YOUR FINAL WARNING! Are you absolutely sure that you want to delete all of your data for this mainnet configuration?"
@@ -23,7 +23,7 @@ if [ "$NETWORK" = "mainnet" ]; then
 
     if [ "$answer2" != "DELETE EVERYTHING" ]; then 
         echo Cancelled
-        exit
+        exit 1
     fi
 else
     read_input()
@@ -39,7 +39,7 @@ else
             confirm
         elif [ "$confirm" = "n" ]; then
             echo "Cancelled"
-            exit 2
+            exit 1
         fi
     }
 
@@ -61,14 +61,14 @@ fi
 # clear old data (if any)
 if [ -d "$DATA_DIR" ]; then
     echo "Deleting data in $DATA_DIR"...
-    rm -rd "$DATA_DIR"
+    rm -rd "$DATA_DIR"  || exit 1
 fi
 
 # remove systemd service
 if [ -f "/etc/systemd/system/nodeset.service" ]; then
     systemctl stop nodeset.service
     systemctl disable nodeset.service
-    rm "/etc/systemd/system/nodeset.service"
+    rm "/etc/systemd/system/nodeset.service" || exit 1
 fi
 
 echo "Finished removing previous configuration"

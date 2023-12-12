@@ -15,9 +15,6 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 export SCRIPT_DIR=$( dirname -- "$( readlink -f -- "${BASH_SOURCE[0]}"; )"; )
-set -a
-source "$SCRIPT_DIR/scripts.env"
-set +a
 export DATA_DIR=""
 usagemsg="Usage: nodeset [--help|-h] [--data-dir|-d=DATA_DIRECTORY] [COMMAND] \nCommands:\nlogs\t\tShow node logs\nshutdown\tShuts down the node\nremove\t\tCompletely deletes the existing installation\nstart\t\tStarts the node\n"
 reset=false
@@ -107,6 +104,9 @@ fi
 
 # check command name makes sense
 case "$1" in
+    exit)
+        "$SCRIPT_DIR/exit.sh"
+        ;;
     help)
         printf "$usagemsg\n"
         exit
