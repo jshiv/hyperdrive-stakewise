@@ -165,7 +165,7 @@ get_vault()
 
 if [ "$vault" = "" ]; then
     get_vault
-elif [ "$vault" != "holesky" ] && [ "$vault" != "gravita" ]; then
+elif [ "$vault" != "holesky" ] && [ "$vault" != "holesky-dev" ] && [ "$vault" != "gravita" ]; then
     echo "Error: incorrect vault name provided."
     printf $usagemsg
     exit 1
@@ -208,7 +208,7 @@ docker pull europe-west4-docker.pkg.dev/stakewiselabs/public/v3-operator:master
 
 if [ "$mnemonic" != "" ]; then
     echo "Recreating StakeWise configuration using existing mnemonic..."
-    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --mnemonic="$mnemonic"
+    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --mnemonic="$mnemonic"
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT" --mnemonic="$mnemonic"
 else
     echo "Initializing new StakeWise configuration..."
