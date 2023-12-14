@@ -242,7 +242,7 @@ if [ "$NETWORK" != "mainnet" ]; then
 fi
 
 ### set bashrc
-nsalias="\n\n# NodeSet\nalias nodeset='bash \"$SCRIPT_DIR/nodeset.sh\" \"-d\" \"$DATA_DIR\"'\n"
+nsalias="\n\n# NodeSet\nalias nodeset='sudo bash \"$SCRIPT_DIR/nodeset.sh\" \"-d\" \"$DATA_DIR\"'\n"
 if [ "$( tail -n 4 /etc/bash.bashrc )" != nsalias ]; then
     printf "$nsalias" >> /etc/bash.bashrc
     echo "Added NodeSet bashrc entry"
