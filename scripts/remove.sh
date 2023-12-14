@@ -28,7 +28,9 @@ if [ "$NETWORK" = "mainnet" ]; then
 else
     read_input()
     {
-        echo "Are you sure you want to delete your previous configuration completely? (y/n)"
+        echo "Are you sure you want to delete your previous configuration completely?"
+        echo "You will have to resync your node. This is a testnet configuration, so this operation is safe."
+        echo "(y/n)"
         read confirm
     }
 

@@ -123,7 +123,7 @@ case "$1" in
         "$SCRIPT_DIR/start.sh"
         ;;
     logs)
-        docker compose -f "$DATA_DIR/compose.yaml" logs -f
+        "$SCRIPT_DIR/logs.sh" "$2"
         ;;
     *)
         printf "You must provide a command!\n\n"
@@ -131,5 +131,3 @@ case "$1" in
         exit
         ;;
 esac
-
-
