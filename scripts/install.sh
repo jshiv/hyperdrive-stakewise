@@ -244,7 +244,7 @@ fi
 ### set bashrc
 nsalias="\n\n# NodeSet\nalias nodeset='bash \"$SCRIPT_DIR/nodeset.sh\" \"-d\" \"$DATA_DIR\"'\n"
 if [ "$( tail -n 4 /etc/bash.bashrc )" != nsalias ]; then
-    printf $nsalias >> /etc/bash.bashrc
+    printf "$nsalias" >> /etc/bash.bashrc
     echo "Added NodeSet bashrc entry"
 else
     echo "NodeSet bashrc entry already set"
