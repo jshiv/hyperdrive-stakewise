@@ -196,42 +196,10 @@ cp "$CLIENT_DIR/$CCNAME.yaml" "$DATA_DIR/$CCNAME.yaml"
 if [ ! -e ./tmp/jwtsecret ]; then
     echo "Generating jwtsecret..."
     # initialize EC, then wait a few seconds for it to create the jwtsecret
-    docker compose -f "$DATA_DIR/compose.yaml" run -d $ECNAME
+    docker compose -f "$DATA_DIR/compose.yaml" up -d $ECNAME
     sleep 3
-    chown $callinguser $DATA_DIR/tmp/jwtsecret
+    chown $callinguser $DATA_DIR/tmp/jwtsecret || exit 2
 fi
-
-
-### setup stakewise operator
-echo "Pulling latest StakeWise operator binary..."
-docker pull europe-west4-docker.pkg.dev/stakewiselabs/public/v3-operator:master
-
-if [ "$mnemonic" != "" ]; then
-    echo "Recreating StakeWise configuration using existing mnemonic..."
-    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --mnemonic="$mnemonic"
-    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT" --mnemonic="$mnemonic"
-else
-    echo "Initializing new StakeWise configuration..."
-    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py init --network="$NETWORK" --vault="$VAULT" --language=english
-    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-keys --vault="$VAULT" --count="$NUMKEYS"
-    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT"
-fi
-
-display_funding_message()
-{
-    echo
-    echo "Please send some ETH to the wallet address above (on the $NETWORK network), then type 'wallet is funded' to continue."
-    read answer
-
-    if [ "$answer" != "wallet is funded" ]; then 
-        display_funding_message
-    fi
-}
-
-echo
-echo "Please note that you must have enough Ether in this node wallet to register validators."
-printf "Each validator takes approximately 0.01 ETH to create when gas is 30 gwei. We recommend depositing AT LEAST 0.1 ETH.\nYou can withdraw this ETH at any time. For more information, see: http://nodeset.io/docs/stakewise\n"
-display_funding_message
 
 ### checkpoint sync
 if [ "$NETWORK" != "mainnet" ]; then
@@ -251,19 +219,63 @@ else
 fi
 
 ### install systemd service
-if [ -f "/etc/systemd/system/nodeset.service" ]; then
-    systemctl stop nodeset.service
-    systemctl disable nodeset.service
+if [[ -d /run/systemd/system ]]; then
+    if [ -f "/etc/systemd/system/nodeset.service" ]; then 
+        # service is already installed, so stop and disable before overwriting just in case
+        systemctl stop nodeset.service
+        systemctl disable nodeset.service
+    fi 
+    cp "$LOCAL_DIR/nodeset.service" "/etc/systemd/system/nodeset.service"
+    systemctl enable nodeset.service   
+else
+    echo "WARNING: you are not using systemd! You will need to create your own boot and shutdown automation."
+    read -p "Press enter to continue..."
 fi
-cp "$LOCAL_DIR/nodeset.service" "/etc/systemd/system/nodeset.service"
-systemctl enable nodeset.service
+
+### setup stakewise operator
+echo "Pulling latest StakeWise operator binary..."
+docker pull europe-west4-docker.pkg.dev/stakewiselabs/public/v3-operator:master
+
+if [ "$mnemonic" != "" ]; then
+    echo "Recreating StakeWise configuration using existing mnemonic..."
+    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --mnemonic="$mnemonic"
+    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT" --mnemonic="$mnemonic"
+else
+    echo "Initializing new StakeWise configuration..."
+    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py init --network="$NETWORK" --vault="$VAULT" --language=english
+    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-keys --vault="$VAULT" --count="$NUMKEYS"
+    docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT"
+fi
+
+display_funding_message()
+{
+    echo
+    echo "Please send some ETH to the wallet address above (on the $NETWORK network), then type 'wallet is funded' to continue..."
+    read answer
+
+    if [ "$answer" != "wallet is funded" ]; then 
+        display_funding_message
+    fi
+}
+
+echo
+echo "Please note that you must have enough Ether in this node wallet to register validators."
+printf "Each validator takes approximately 0.01 ETH to create when gas is 30 gwei. We recommend depositing AT LEAST 0.1 ETH.\nYou can withdraw this ETH at any time. For more information, see: http://nodeset.io/docs/stakewise\n"
+display_funding_message
+
+### start SW
+echo "Starting StakeWise operator service..."
+docker compose -f "$DATA_DIR/compose.yaml" up -d stakewise
 
 ### complete
 echo 
 echo "{::} Installation Complete! {::}"
-echo 
-echo "We recommend that you verify the configuration file in your installation directory looks correct:"
+echo
+echo "Your new node is started!"
+echo
+echo "We recommend that you check two things from here:
+echo "1. Verify your node is syncing correctly and watch its progress with \"nodeset logs\"
+echo "2. Verify the configuration file in your installation directory looks correct:"
 echo $DATA_DIR/nodeset.env
 echo
-echo "Please log out, then log back in to reload your environment, then start the node with:"
-echo "nodeset start"
+echo "Note that you must reload your environment (exit and log in again) to enable the \"nodeset\" commands."

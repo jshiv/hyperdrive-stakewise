@@ -2,11 +2,13 @@ services:
   geth:
     image: "ethereum/client-go:stable"
     command: --$NETWORK
+      --port $ECPORT
       --http
       --http.addr 0.0.0.0
       --http.corsdomain=*
       --http.vhosts=*
       --http.api=web3,eth,net,engine
+      --http.port $ECAPIPORT
       --authrpc.addr 0.0.0.0
       --authrpc.port $ECRPCPORT
       --authrpc.jwtsecret /tmp/jwtsecret
