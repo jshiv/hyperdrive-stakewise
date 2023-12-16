@@ -17,8 +17,7 @@ APP_DIR="$SCRIPT_DIR/.."
 LOCAL_DIR="$APP_DIR/local"
 CLIENT_DIR="$APP_DIR/local/clients"
 VAULT_DIR="$APP_DIR/local/vaults"
-
-usagemsg="Usage: install-node.sh [--data-directory|-d=DATA_DIRECTORY] [--mnemonic|-m=MNEMONIC] [--vault|-v=VAULT] [--remove|-r]\nSupported vaults: holesky, gravita\nExample: sudo bash install-node.sh -d "~/data" -m \"correct horse battery staple...\" -v=holesky"
+usagemsg=$(< $SCRIPT_DIR/install-help.txt)"\n\n"
 export DATA_DIR=""
 eth1client=""
 eth2client=""
@@ -197,9 +196,6 @@ elif [ "$vault" != "holesky" ] && [ "$vault" != "holesky-dev" ] && [ "$vault" !=
     exit 1
 fi
 
-
-
-### install compose configs
 ### determine and install client config
 get_eth1()
 {
@@ -249,6 +245,7 @@ elif [ "$eth2client" != "nimbus" ]; then
     exit 1
 fi
 
+# install default vault config
 cp "$VAULT_DIR/$vault.env" "$DATA_DIR/nodeset.env"
 
 # replace default client names in installed configuration
@@ -260,6 +257,7 @@ set -a
 source "$DATA_DIR/nodeset.env"
 set +a
 
+### prep data directory
 mkdir $DATA_DIR/$CCNAME-data
 mkdir $DATA_DIR/stakewise-data
 chown $callinguser $DATA_DIR/$CCNAME-data

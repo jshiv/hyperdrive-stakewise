@@ -1,85 +1,78 @@
-# stakewise-reference
+# {::} Hyperdrive - StakeWise
 
-A reference setup script for NodeSet nodes operating for StakeWise vaults.
+A bash-based utility for operating NodeSet nodes for StakeWise vaults.
 
 ## Dependencies
 
-You must have docker and docker compose already installed in your target environment. We recommend a fresh and updated Debian installation. For Debian, you can install these dependencies with the following commands:
+Each node corresponds to a single vault and should have its own isolated environment, which must have docker and docker compose already installed. We recommend a fresh and updated Debian installation. For Debian, you can install these dependencies with the following commands:
 
 `sudo apt-get update`
 
 `sudo apt-get install -y docker docker-compose`
 
-This script also assumes you have a systemd-based environment to support automatically restarting the container services on boot and a graceful shutdown process.
+This project also assumes you have a systemd-based environment to support automatically restarting the container services on boot and a graceful shutdown process. If you use another init system, you must provide your own automation using `nodeset start` for and `nodeset shutdown` for a graceful boot and shutdown.
 
 ## Usage
 
 ### First Setup
 
-First, clone this repository into the target location with `git clone git@github.com:nodeset-org/stakewise-reference.git`. Each vault should have its own isolated environment
+First, clone this repository with `git clone git@github.com:nodeset-org/stakewise-reference.git`, then `cd hyperdrive-stakewise` to enter the new application directory.
 
 To set up the environment, simply run the install script as root:
 `sudo bash install-node.sh`
 
-Remember to forward your ports so you can find peers! Nimbus uses `9000` and Geth uses `30303` (both TCP & UDP). Note: for simplicity, the included EC configurations are open to all external http requests. You should NOT forward the port for the HTTP endpoints without first limiting the configuration further, otherwise your node may be vulnerable to a DDOS attack.
+To see full documentation for the installation script, use the "-h" or "--help" option: `sudo bash install-node.sh --help`
 
-Once you run the script, logs will be shown. You may exit this view safely with `ctrl+c` and everything will continue running. To see the logs again, use `docker compose logs -f`.
+Remember to forward ports on your router so you can find peers! CL clients use `9000` and EL clients use `30303` (both TCP & UDP) for peering by default.
 
-### Reset
+After installation, the node will start syncing immediately. You will not be able to use any `nodeset` commands until after you first reload your environment (it's easiest to log out and log back in again).
 
-If something goes wrong, you can use the `-r` flag to reset the configuration completely before initializing as usual, deleting all the chain data and client caches. On Holesky, resyncing is quick, but _DO NOT DO THIS ON MAINNET_ if you have any active validators!
+### Wait for Sync
 
-### Graceful Shutdown
+You can use `nodeset logs` to check the output logs for the node. Although testnets may be faster, it can take a long time to sync a mainnet node (12-48 hours depending on peering).
 
-To bring down the node (e.g. for maintenance), use the `-s` or `--shutdown` flag. 
+### Updating Your Node
 
-Example: `sh init-node.sh --shutdown VAULT`
+Any time the node is started (either on OS boot or via `nodeset start`), it will automatically pull any updates for the stakewise operator binary and EL & CL clients. However, upgrading your OS and this utility must be done manually. 
 
-You can safely restart everything with the same command, `sh init-node.sh VAULT`.
+To update this utility, simply delete the hyperdrive-stakewise application directory, then clone the repository again into the same location. As long as you clone it into the same location as your old application directory, everything should continue to work normally.
 
-### Migration
+DO NOT delete your installation directory (default is `~/node-data`) or you will have to reinstall and resync your node!
 
-Instead of setting up a new configuration from scratch, this script can import an existing setup using the `-m` or `--mnemonic` option to provide an existing mnemonic.
+### Maintenance
 
-For example:
-`sudo sh init-node.sh -m "correct horse battery staple..." holesky`
-
-### Custom Commands
-
-If you want to run a command on any specific container, you can do so like this:
-`docker compose run CONTAINERNAME COMMAND`
-E.g., perform a trusted node sync in Nimbus: `docker compose run nimbus trustedNodeSync -d=/home/user/data --network=$NETWORK --trusted-node-url=https://checkpoint-sync.holesky.ethpandaops.io --backfill=false`
+To bring down the node (e.g. for maintenance), use `nodeset shutdown`. You can restart the node using `nodeset start` (or simply reboot the machine).
 
 ## Environment Details
 
-At a high level, the `init-node.sh` script wraps a docker compose setup. It sets up the environment, then executes `docker compose up -d`. This includes everything you need to run a node for a NodeSet StakeWise v3 vault:
+At a high level, the `install-node.sh` script creates a docker compose setup in your specified data directory. It sets up the configuration files, then executes `docker compose up -d`. This includes everything you need to run a node for a NodeSet StakeWise v3 vault:
 
 [v3-operator](https://github.com/stakewise/v3-operator): the StakeWise software used to generate keystores and validator deposit data, create/manage the node wallet, and register new validators
 
-[Nimbus](https://nimbus.guide/): a lightweight Ethereum validator client.
+[ethdo](https://github.com/wealdtech/ethdo): an eth2 utility used to generate signed exit messages to send to NodeSet.
 
-[Geth](https://geth.ethereum.org/docs): an Ethereum execution client.
+Execution layer clients: Nethermind and Geth are currently supported (more coming soon)
 
-[ethdo](https://github.com/wealdtech/ethdo): an eth2 utility developed by Jim McDonald. Used to generate backup exit messages to send to NodeSet.
+Consensus layer clients: Nimbus is currently supported (more coming soon)
+
+### Custom Commands (Advanced)
+
+If you want to run a command on any specific container, you must first source the appropriate configuration data:
+
+E.g. `source /home/myuser/node-data/nodeset.env`
+
+Then, you can use docker compose to send the command:
+
+E.g. `docker compose -f "/home/myuser/compose.yaml" run nimbus trustedNodeSync -d=/home/user/data --network=$NETWORK --trusted-node-url=https://checkpoint-sync.holesky.ethpandaops.io --backfill=false`
+
+Keep in mind that any commands run this way will be executed inside the container, so any paths should be relative to the mounted volumes specified in the compose files located in your data directory (not to your wrapping environment).
 
 ## Future Improvements
 
 This project needs expansion! Here are some ways you can help out:
 
 - Adding more EL and CL client compatibility
-- Adding the ability to reference an external EL client instead of using a local one
+- Adding more first-class support for referencing external EL/CL clients instead of using local installations
 - Testing and reporting bugs
 
 **NodeSet will reward your thoughtful contributions!**
-
-
-
-
-
-## TEMP
-
-`sudo bash install-node.sh` -- installs the node, can use `-r` to remove the previous configuration, use `-d` to pass your own data directory
-`nodeset remove` -- removes the installation
-`nodeset start` -- starts the node
-`nodeset logs` -- self-explanatory
-`nodeset shutdown` -- shuts down all the containers

@@ -1,0 +1,22 @@
+Usage: 
+
+nodeset [OPTIONS] COMMAND
+
+Options: 
+
+-h, --help
+
+    Show this message
+
+-d directory, --data-directory=directory
+
+    Specify location for the configuration directory. Default is /home/$USER/node-data.
+
+Commands:
+
+exit        Exit all validators
+help        Show this message
+logs        Show node logs
+shutdown    Shut down the node
+remove      Delete the existing installation (without exiting validators)
+start       Start the node

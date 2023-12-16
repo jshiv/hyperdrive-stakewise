@@ -16,7 +16,7 @@ fi
 
 export SCRIPT_DIR=$( dirname -- "$( readlink -f -- "${BASH_SOURCE[0]}"; )"; )
 export DATA_DIR=""
-usagemsg="Usage: nodeset [--help|-h] [--data-dir|-d=DATA_DIRECTORY] [COMMAND] \nCommands:\nlogs\t\tShow node logs\nshutdown\tShuts down the node\nremove\t\tCompletely deletes the existing installation\nstart\t\tStarts the node\n"
+usagemsg=$(< $SCRIPT_DIR/nodeset-help.txt)"\n\n"
 reset=false
 shutdown=false
 if [ $SUDO_USER ]; then 
@@ -31,7 +31,7 @@ while getopts "hd:-:" option; do
             case "${OPTARG}" in
                 help)
                     printf "$usagemsg\n"
-                    exit 0
+                    exit
                     ;;
                 data-directory=*)
                     export DATA_DIR=${OPTARG#*=}
@@ -56,7 +56,7 @@ while getopts "hd:-:" option; do
             ;;
         h)
             printf "$usagemsg\n"
-            exit 0
+            exit
             ;;
         d)
             export DATA_DIR=${OPTARG}
@@ -98,7 +98,7 @@ if [ "$1" != "help" ]; then
         echo "FATAL ERROR: Cannot find nodeset.env configuration file"
         echo "Are you sure this data directory is correct? If so, you must recover your configuration manually."
         echo "Given data directory: $DATA_DIR/nodeset.env"
-        exit 2
+        exit 1
     fi
 fi
 
@@ -106,28 +106,37 @@ fi
 case "$1" in
     exit)
         "$SCRIPT_DIR/exit.sh"
+        exit $?
         ;;
     help)
-        printf "$usagemsg\n"
+        printf "$usagemsg"
         exit
         ;;
     remove)
         "$SCRIPT_DIR/remove.sh"
+        exit $?
         ;;
     shutdown)
         echo "Shutting down containers..."
         docker compose -f "$DATA_DIR/compose.yaml" down
-        exit
+        exit $?
         ;;
     start)
         "$SCRIPT_DIR/start.sh"
+        exit $?
         ;;
     logs)
         "$SCRIPT_DIR/logs.sh" "$2"
+        exit $?
+        ;;
+    "")
+        printf "You must provide a command!\n\n"
+        printf "$usagemsg"
+        exit 1
         ;;
     *)
-        printf "You must provide a command!\n\n"
-        printf "$usagemsg\n"
-        exit
+        printf "Unknown command \"$1\"\n\n"
+        printf "$usagemsg"
+        exit 1
         ;;
 esac
