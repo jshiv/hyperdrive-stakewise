@@ -72,7 +72,7 @@ Keep in mind that any commands run this way will be executed inside the containe
 This project needs expansion! Here are some ways you can help out:
 
 - Adding more EL and CL client compatibility
-- Adding more first-class support for referencing external EL/CL clients instead of using local installations
+- Adding more first-class support for referencing external EL/CL clients
 - Testing and reporting bugs
 
-**NodeSet will reward your thoughtful contributions!**
+**NodeSet will reward thoughtful contributions!**
