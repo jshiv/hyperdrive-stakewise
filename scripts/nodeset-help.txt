@@ -1,22 +1,25 @@
+{::} NodeSet Hyperdrive - StakeWise {::}
+
+
 Usage: 
 
-nodeset [OPTIONS] COMMAND
+    nodeset [OPTIONS] COMMAND
 
 Options: 
 
--h, --help
+    -h, --help
 
-    Show this message
+        Show this message
 
--d directory, --data-directory=directory
+    -d directory, --data-directory=directory
 
-    Specify location for the configuration directory. Default is /home/$USER/node-data.
+        Specify location for the configuration directory. Default is /home/$USER/node-data.
 
 Commands:
 
-exit        Exit all validators
-help        Show this message
-logs        Show node logs
-shutdown    Shut down the node
-remove      Delete the existing installation (without exiting validators)
-start       Start the node
+    exit        Exit all validators
+    help        Show this message
+    logs        Show node logs
+    shutdown    Shut down the node
+    remove      Delete the existing installation (without exiting validators)
+    start       Start the node

@@ -6,29 +6,18 @@ if [ "$BASH_VERSION" = '' ]; then
     exit
 fi
 
-# ensure root access
-if [ "$(id -u)" -ne 0 ]; then
-  echo "Please run as root (or with sudo)"
-  exit
-fi
-
 export SCRIPT_DIR=$( dirname -- "$( readlink -f -- "${BASH_SOURCE[0]}"; )"; )
 APP_DIR="$SCRIPT_DIR/.."
 LOCAL_DIR="$APP_DIR/local"
 CLIENT_DIR="$APP_DIR/local/clients"
 VAULT_DIR="$APP_DIR/local/vaults"
-usagemsg=$(< $SCRIPT_DIR/install-help.txt)"\n\n"
+usagemsg="\n"$(< $SCRIPT_DIR/install-help.txt)"\n\n"
 export DATA_DIR=""
 eth1client=""
 eth2client=""
 mnemonic=""
 vault=""
 remove=false
-if [ $SUDO_USER ]; then 
-    callinguser=$SUDO_USER; 
-else 
-    callinguser=`whoami`
-fi
 
 while getopts "hre:c:v:d:m:-:" option; do
     case $option in
@@ -138,6 +127,19 @@ while getopts "hre:c:v:d:m:-:" option; do
             ;;
     esac
 done
+
+### ensure root access
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Please run as root (or with sudo)"
+  exit
+fi
+
+### find calling user
+if [ $SUDO_USER ]; then 
+    callinguser=$SUDO_USER; 
+else 
+    callinguser=`whoami`
+fi
 
 ### set default data dir if not passed in
 if [ "$DATA_DIR" = "" ]; then

@@ -1,41 +1,41 @@
+{::} NodeSet Hyperdrive - StakeWise Installer {::}
+
 Usage: 
 
-sudo bash install-node.sh [OPTIONS]
+    sudo bash install-node.sh [OPTIONS]
 
-This script must be run with root privileges.
-
+    This script must be run with root privileges.
 
 Options:
 
--c client, --eth2client=client
+    -c client, --eth2client=client
 
-    Specify a consensus (eth2) client to use. Currently supported options: nimbus
+        Specify a consensus (eth2) client to use. Currently supported options: nimbus
 
--d directory, --data-directory=directory
+    -d directory, --data-directory=directory
 
-    Specify location for the new configuration directory. Default is /home/$USER/node-data.
+        Specify location for the new configuration directory. Default is /home/$USER/node-data.
 
--e client, --eth1client=client
+    -e client, --eth1client=client
 
-    Specify an execution (eth1) client to use. Currently supported options: nethermind, geth
+        Specify an execution (eth1) client to use. Currently supported options: nethermind, geth
 
--h, --help
+    -h, --help
 
-    Display this message
+        Display this message
 
--m mnemonic-string, --mnemonic=mnemonic-string
+    -m mnemonic-string, --mnemonic=mnemonic-string
 
-    Create a configuration using an existing mnemonic instead of generating a new one.
+        Create a configuration using an existing mnemonic instead of generating a new one.
 
--v vault, --vault=vault 
+    -v vault, --vault=vault 
 
-    Specify the vault configuration to use. Supported vaults: holesky, gravita
+        Specify the vault configuration to use. Supported vaults: holesky, gravita
 
--r, --remove
+    -r, --remove
 
-    Remove the existing installation (if any) in the specified data directory before proceeding with the installation.
-
+        Remove the existing installation (if any) in the specified data directory before proceeding with the installation.
 
 Example: 
 
-sudo bash install-node.sh -d "~/mydatadir" -m \"correct horse battery staple...\" --vault=holesky
+    sudo bash install-node.sh -d "~/mydatadir" -m \"correct horse battery staple...\" --vault=holesky
