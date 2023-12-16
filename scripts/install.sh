@@ -31,7 +31,7 @@ else
     callinguser=`whoami`
 fi
 
-while getopts "hrc:v:d:m:-:" option; do
+while getopts "hre:c:v:d:m:-:" option; do
     case $option in
         -)
             case "${OPTARG}" in
