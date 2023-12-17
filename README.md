@@ -16,7 +16,7 @@ This project also assumes you have a systemd-based environment to support automa
 
 ### First Setup
 
-First, clone this repository with `git clone git@github.com:nodeset-org/stakewise-reference.git`, then `cd hyperdrive-stakewise` to enter the new application directory.
+First, clone this repository with `git clone git@github.com:nodeset-org/hyperdrive-stakewise.git`, then `cd hyperdrive-stakewise` to enter the new application directory.
 
 To set up the environment, simply run the install script as root:
 `sudo bash install-node.sh`
