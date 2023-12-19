@@ -1,4 +1,4 @@
-{::} NodeSet Hyperdrive - StakeWise Installer {::}
+{::} NodeSet Hyperdrive - StakeWise Installer | VERSION {::}
 
 Usage: 
 

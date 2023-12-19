@@ -16,7 +16,9 @@ fi
 
 export SCRIPT_DIR=$( dirname -- "$( readlink -f -- "${BASH_SOURCE[0]}"; )"; )
 export DATA_DIR=""
-usagemsg="\n"$(< $SCRIPT_DIR/nodeset-help.txt)"\n\n"
+version="v"$(< $SCRIPT_DIR/version.txt)
+help=$(< $SCRIPT_DIR/nodeset-help.txt)
+usagemsg="\n"${help/VERSION/$version}"\n\n"
 reset=false
 shutdown=false
 if [ $SUDO_USER ]; then 

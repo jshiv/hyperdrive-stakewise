@@ -1,5 +1,4 @@
-{::} NodeSet Hyperdrive - StakeWise {::}
-
+{::} NodeSet Hyperdrive - StakeWise | VERSION {::}
 
 Usage: 
 
