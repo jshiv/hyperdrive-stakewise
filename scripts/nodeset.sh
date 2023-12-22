@@ -16,9 +16,9 @@ fi
 
 export SCRIPT_DIR=$( dirname -- "$( readlink -f -- "${BASH_SOURCE[0]}"; )"; )
 export DATA_DIR=""
-version="v"$(< $SCRIPT_DIR/version.txt)
-help=$(< $SCRIPT_DIR/nodeset-help.txt)
-usagemsg="\n"${help/VERSION/$version}"\n\n"
+version=$(< "$SCRIPT_DIR/version.txt")
+help=$(< "$SCRIPT_DIR/nodeset-help.txt")
+usagemsg="\n"${help/VERSION/"v"$version}"\n\n"
 reset=false
 shutdown=false
 if [ $SUDO_USER ]; then 
@@ -130,6 +130,10 @@ case "$1" in
     logs)
         "$SCRIPT_DIR/logs.sh" "$2"
         exit $?
+        ;;
+    version)
+        echo $version
+        exit 0
         ;;
     "")
         printf "You must provide a command!\n\n"

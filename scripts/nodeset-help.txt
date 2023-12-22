@@ -22,3 +22,4 @@ Commands:
     shutdown    Shut down the node
     remove      Delete the existing installation (without exiting validators)
     start       Start the node
+    version     Show version
