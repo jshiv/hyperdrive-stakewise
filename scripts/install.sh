@@ -145,7 +145,7 @@ fi
 
 ### set default data dir if not passed in
 if [ "$DATA_DIR" = "" ]; then
-    export DATA_DIR="/home/$callinguser/node-data"
+    export DATA_DIR="/home/$callinguser/.node-data"
 fi
 
 echo "{::} Welcome to the NodeSet node installer for StakeWise {::}"

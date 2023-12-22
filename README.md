@@ -37,7 +37,7 @@ Any time the node is started (either on OS boot or via `nodeset start`), it will
 
 To update this utility, simply delete the hyperdrive-stakewise application directory, then clone the repository again into the same location. As long as you clone it into the same location as your old application directory, everything should continue to work normally.
 
-DO NOT delete your installation directory (default is `~/node-data`) or you will have to reinstall and resync your node!
+DO NOT delete your installation directory (default is `~/.node-data`) or you will have to reinstall and resync your node!
 
 ### Maintenance
 
@@ -59,7 +59,7 @@ Consensus layer clients: Nimbus is currently supported (more coming soon)
 
 If you want to run a command on any specific container, you must first source the appropriate configuration data:
 
-E.g. `source /home/myuser/node-data/nodeset.env`
+E.g. `source /home/myuser/.node-data/nodeset.env`
 
 Then, you can use docker compose to send the command:
 

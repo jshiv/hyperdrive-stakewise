@@ -12,7 +12,7 @@ Options:
 
     -d directory, --data-directory=directory
 
-        Specify location for the configuration directory. Default is /home/$USER/node-data.
+        Specify location for the configuration directory. Default is /home/$USER/.node-data.
 
 Commands:
 
