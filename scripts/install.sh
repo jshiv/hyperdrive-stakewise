@@ -289,7 +289,7 @@ if [ ! -e ./tmp/jwtsecret ]; then
     until [ -f "$DATA_DIR/tmp/jwtsecret" ] || [ $i = 0 ]; do
         echo "Waiting for jwtsecret..."
         sleep 5
-        i=i-1
+        i=$((i-1))
     done
     if [ ! -f "$DATA_DIR/tmp/jwtsecret" ]; then
         echo "Error: Could not generate jwtsecret before timeout!"
