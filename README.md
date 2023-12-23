@@ -23,7 +23,7 @@ To set up the environment, simply run the install script as root:
 
 To see full documentation for the installation script, use the "-h" or "--help" option: `sudo bash install-node.sh --help`
 
-Remember to forward ports on your router so you can find peers! CL clients use `9000` and EL clients use `30303` (both TCP & UDP) for peering by default.
+Remember to forward ports on your router so you can find peers! CL clients use `9000` and EL clients use `30303` (both TCP & UDP) for peering by default. Note that the node is configured to accept all REST API requests by default, so you should NOT forward the port used for this (`5052` by default), as this poses a security risk.
 
 After installation, the node will start syncing immediately. You will not be able to use any `nodeset` commands until after you first reload your environment (it's easiest to log out and log back in again).
 

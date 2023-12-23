@@ -2,6 +2,7 @@ services:
   nimbus:
     image: "statusim/nimbus-eth2:amd64-latest"
     command: -d=/home/user/data
+      --suggested-fee-recipient=$FEERECIPIENT
       --network=$NETWORK
       --web3-url="$ECNAME:$ECRPCPORT"
       --jwt-secret=/tmp/jwtsecret
