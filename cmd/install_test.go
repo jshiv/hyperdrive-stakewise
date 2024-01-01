@@ -21,9 +21,12 @@ func Test_InstallCommand(t *testing.T) {
 		"--ecname=geth",
 	})
 	err := rootCmd.Execute()
-
+	if err != nil {
+		t.Fatal(err)
+	}
 	rootCmd.SetArgs([]string{
 		"install",
+		fmt.Sprintf("--directory=./%s/", testDir),
 	})
 	err = rootCmd.Execute()
 	if err != nil {

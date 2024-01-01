@@ -66,12 +66,12 @@ var initCmd = &cobra.Command{
 			log.Fatalf("network %s is not avaliable, please choose holskey or main", network)
 		}
 
-		err = os.MkdirAll(dataDir, 0644)
+		err = os.MkdirAll(dataDir, 0766)
 		if err != nil {
 			log.Error(err)
 		}
 
-		err = os.WriteFile(filepath.Join(dataDir, nodesetFile), envFile, 0644)
+		err = os.WriteFile(filepath.Join(dataDir, nodesetFile), envFile, 0766)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -81,7 +81,7 @@ var initCmd = &cobra.Command{
 		}
 
 		//Write the compose file
-		err = os.WriteFile(filepath.Join(dataDir, "compose.yaml"), local.Compose, 0644)
+		err = os.WriteFile(filepath.Join(dataDir, "compose.yaml"), local.Compose, 0766)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -91,7 +91,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Error(err)
 		}
-		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ecName)), ecCompose, 0644)
+		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ecName)), ecCompose, 0766)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -101,7 +101,7 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Error(err)
 		}
-		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ccName)), ccCompose, 0644)
+		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ccName)), ccCompose, 0766)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -114,25 +114,25 @@ var initCmd = &cobra.Command{
 			log.Error(err)
 		}
 
-		//from install.sh
-		// prep data directory
-		// mkdir $DATA_DIR/$CCNAME-data
-		// mkdir $DATA_DIR/stakewise-data
-		// chown $callinguser $DATA_DIR/$CCNAME-data
-		// chmod 700 $DATA_DIR/$CCNAME-data
-		// # v3-operator user is "nobody" for safety since keys are stored there
-		// # you will need to use root to access this directory
-		// chown nobody $DATA_DIR/stakewise-data
-		os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), 700)
-		u, err := user.Current()
-		if err != nil {
-			log.Errorf("error looking up current user user info: %e", err)
-		}
-		chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
+		// //from install.sh
+		// // prep data directory
+		// // mkdir $DATA_DIR/$CCNAME-data
+		// // mkdir $DATA_DIR/stakewise-data
+		// // chown $callinguser $DATA_DIR/$CCNAME-data
+		// // chmod 700 $DATA_DIR/$CCNAME-data
+		// // # v3-operator user is "nobody" for safety since keys are stored there
+		// // # you will need to use root to access this directory
+		// // chown nobody $DATA_DIR/stakewise-data
+		// os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), 0766)
+		// // u, err := user.Current()
+		// if err != nil {
+		// 	log.Errorf("error looking up current user user info: %e", err)
+		// }
+		// // chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
 
-		os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ecName)), 700)
-		chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
-		os.MkdirAll(filepath.Join(dataDir, "stakewise-data"), 700)
+		// os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ecName)), 0766)
+		// // chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
+		// os.MkdirAll(filepath.Join(dataDir, "stakewise-data"), 0766)
 
 	},
 }

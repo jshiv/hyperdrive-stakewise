@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -32,12 +33,14 @@ to quickly create a Cobra application.`,
 		}
 
 		ecName := viper.GetString("ECNAME")
-		//docker compose -f "$DATA_DIR/compose.yaml" up -d $ECNAME
-		command := exec.Command("docker", "compose", "--file", filepath.Join(dataDir, "compose.yaml"), "up", "-d", ecName)
-		fmt.Println(command.Args)
+		dataDirAbs, _ := filepath.Abs(dataDir)
+		command := exec.Command("docker", "compose", "--file", filepath.Join(dataDirAbs, "compose.yaml"), "up", "-d", ecName)
+
+		command.Dir = dataDirAbs
+		command.Env = append(command.Env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
+		command.Env = append(command.Env, fmt.Sprintf("DATA_DIR=%s", dataDirAbs))
 		for k, v := range viper.AllSettings() {
 			env := fmt.Sprintf("%s=%s", strings.ToUpper(k), v)
-			fmt.Println(env)
 			command.Env = append(command.Env, env)
 		}
 
