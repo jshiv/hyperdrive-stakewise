@@ -86,20 +86,11 @@ while getopts "hre:c:v:d:m:-:" option; do
         c)
             eth2client=${OPTARG}
             ;;
-        c=*)
-            eth2client=${OPTARG#*=}
-            ;;
         d)
             export DATA_DIR=${OPTARG}
             ;;
-        d=*)
-            export DATA_DIR=${OPTARG#*=}
-            ;;
         e)
             eth1client=${OPTARG}
-            ;;
-        e=*)
-            eth1client=${OPTARG#*=}
             ;;
         h)
             printf "$usagemsg\n"
@@ -108,14 +99,8 @@ while getopts "hre:c:v:d:m:-:" option; do
         m)
             mnemonic=${OPTARG}
             ;;
-        m=*)
-            mnemonic=${OPTARG#*=}
-            ;;
         v)
             vault=${OPTARG}
-            ;;
-        v=*)
-            vault=${OPTARG#*=}
             ;;
         r)
             remove=true
@@ -337,7 +322,12 @@ echo "Pulling latest StakeWise operator binary..."
 docker pull europe-west4-docker.pkg.dev/stakewiselabs/public/v3-operator:master
 
 if [ "$mnemonic" != "" ]; then
+    echo "supplying a mnemonic is not yet supported, please check back later!"
+    exit
+
     echo "Recreating StakeWise configuration using existing mnemonic..."
+    # todo: recover setup using deposit data downloaded from NodeSet API
+    docker compose run stakewise src/main.py get-validators-root --deposit-data-file=<DEPOSIT DATA FILE>
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --mnemonic="$mnemonic"
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT" --mnemonic="$mnemonic"
 else
@@ -364,8 +354,10 @@ printf "Each validator takes approximately 0.01 ETH to create when gas is 30 gwe
 display_funding_message
 
 ### start SW
-echo "Starting StakeWise operator service..."
-docker compose -f "$DATA_DIR/compose.yaml" up -d stakewise
+echo "Starting node..."
+# docker compose -f "$DATA_DIR/compose.yaml" up -d stakewise
+sudo bash $SCRIPT_DIR/nodeset.sh -d "$DATA_DIR" start
+
 
 ### complete
 echo 
