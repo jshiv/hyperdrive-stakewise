@@ -24,6 +24,7 @@ export DATA_DIR=""
 eth1client=""
 eth2client=""
 mnemonic=""
+checkpoint=true
 vault=""
 remove=false
 
@@ -58,6 +59,9 @@ while getopts "hre:c:v:d:m:-:" option; do
                     ;;
                 mnemonic)
                     mnemonic="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    ;;
+                no-checkpoint)
+                    checkpoint=false
                     ;;
                 remove)
                     remove=true
@@ -285,7 +289,7 @@ if [ ! -e ./tmp/jwtsecret ]; then
 fi
 
 ### checkpoint sync
-if [ "$NETWORK" != "mainnet" ]; then
+if [ $checkpoint = true ] && [ "$NETWORK" != "mainnet" ]; then
     case $CCNAME in
         nimbus) 
             echo "Performing checkpoint sync..."
@@ -314,7 +318,7 @@ if [[ -d /run/systemd/system ]]; then
     systemctl enable nodeset.service   
 else
     echo "WARNING: you are not using systemd! You will need to create your own boot and shutdown automation."
-    read -p "Press enter to continue..."
+    read -p "Press enter to acknowledge and continue..."
 fi
 
 ### setup stakewise operator
@@ -327,7 +331,7 @@ if [ "$mnemonic" != "" ]; then
 
     echo "Recreating StakeWise configuration using existing mnemonic..."
     # todo: recover setup using deposit data downloaded from NodeSet API
-    docker compose run stakewise src/main.py get-validators-root --deposit-data-file=<DEPOSIT DATA FILE>
+    #docker compose run stakewise src/main.py get-validators-root --deposit-data-file=<DEPOSIT DATA FILE>
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --mnemonic="$mnemonic"
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT" --mnemonic="$mnemonic"
 else
