@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/nodeset-org/hyperdrive-stakewise/config"
 	"github.com/nodeset-org/hyperdrive-stakewise/local"
 )
 
@@ -43,27 +44,19 @@ var initCmd = &cobra.Command{
 			ccName = ccs[n]
 		}
 
-		var envFile []byte
+		// var envFile []byte
 		var err error
+		var c config.Config
 		switch network {
 		case "holskey":
-			envFile, err = local.Vaults.ReadFile("vaults/holesky.env")
-			if err != nil {
-				log.Error(err)
-			}
+			c = config.Holskey
 		case "holskey-dev":
-			envFile, err = local.Vaults.ReadFile("vaults/holesky-dev.env")
-			if err != nil {
-				log.Error(err)
-			}
+			c = config.HoleskyDev
 		case "main":
-			envFile, err = local.Vaults.ReadFile("vaults/gravita.env")
-			if err != nil {
-				log.Error(err)
-			}
+			c = config.Gravita
 
 		default:
-			log.Fatalf("network %s is not avaliable, please choose holskey or main", network)
+			log.Fatalf("network %s is not avaliable, please choose holskey, holskey-dev or main", network)
 		}
 
 		err = os.MkdirAll(dataDir, 0766)
@@ -71,13 +64,18 @@ var initCmd = &cobra.Command{
 			log.Error(err)
 		}
 
-		err = os.WriteFile(filepath.Join(dataDir, nodesetFile), envFile, 0766)
+		c.SetViper()
+		//Ensure that nodeset.env contains the correct ECNAME and CCNAME
+		viper.Set("ECNAME", ecName)
+		viper.Set("CCNAME", ccName)
+
+		err = c.SetConfigPath(dataDir)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		if err := viper.ReadInConfig(); err != nil {
-			log.Fatal("Can't read config:", err)
+		err = c.WriteConfig()
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		//Write the compose file
@@ -104,14 +102,6 @@ var initCmd = &cobra.Command{
 		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ccName)), ccCompose, 0766)
 		if err != nil {
 			log.Fatal(err)
-		}
-
-		//Ensure that nodeset.env contains the correct ECNAME and CCNAME
-		viper.Set("ECNAME", ecName)
-		viper.Set("CCNAME", ccName)
-		err = viper.WriteConfig()
-		if err != nil {
-			log.Error(err)
 		}
 
 		// //from install.sh

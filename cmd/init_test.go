@@ -16,7 +16,7 @@ func Test_InitCommand(t *testing.T) {
 	defer os.RemoveAll(testDir)
 	rootCmd.SetArgs([]string{
 		"init",
-		"--network=holskey",
+		"--network=holskey-dev",
 		fmt.Sprintf("--directory=./%s/", testDir),
 		"--ecname=nethermind",
 	})

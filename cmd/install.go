@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/nodeset-org/hyperdrive-stakewise/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,38 +29,30 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("install called")
 
-		if err := viper.ReadInConfig(); err != nil {
+		c, err := config.LoadConfig()
+		if err != nil {
 			log.Fatal("Can't read config:", err)
 		}
 
-		ecName := viper.GetString("ECNAME")
-		dataDirAbs, _ := filepath.Abs(dataDir)
-		command := exec.Command("docker", "compose", "--file", filepath.Join(dataDirAbs, "compose.yaml"), "up", "-d", ecName)
+		command := exec.Command("docker", "compose", "--file", filepath.Join(c.DataDir, "compose.yaml"), "up", "-d", c.ExceutionClientName)
 
-		command.Dir = dataDirAbs
+		command.Dir = c.DataDir
 		command.Env = append(command.Env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
-		command.Env = append(command.Env, fmt.Sprintf("DATA_DIR=%s", dataDirAbs))
+		command.Env = append(command.Env, fmt.Sprintf("DATA_DIR=%s", c.DataDir))
 		for k, v := range viper.AllSettings() {
 			env := fmt.Sprintf("%s=%s", strings.ToUpper(k), v)
 			command.Env = append(command.Env, env)
 		}
 
-		stdout, err := command.StdoutPipe()
-		command.Stderr = command.Stdout
-		if err != nil {
+		command.Stdout = os.Stdout
+		command.Stderr = os.Stderr
+
+		// Start the command
+		if err := command.Start(); err != nil {
 			log.Error(err)
 		}
-		if err = command.Start(); err != nil {
-			log.Fatal(err)
-		}
-		for {
-			tmp := make([]byte, 1024)
-			_, err := stdout.Read(tmp)
-			fmt.Print(string(tmp))
-			if err != nil {
-				break
-			}
-		}
+
+		command.Wait()
 
 	},
 }
