@@ -8,7 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/nodeset-org/hyperdrive-stakewise/config"
+	"github.com/nodeset-org/hyperdrive-stakewise/hyperdrive/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

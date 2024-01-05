@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/nodeset-org/hyperdrive-stakewise/config"
+	"github.com/nodeset-org/hyperdrive-stakewise/hyperdrive/config"
 	"github.com/nodeset-org/hyperdrive-stakewise/local"
 )
 
