@@ -24,6 +24,7 @@ export DATA_DIR=""
 eth1client=""
 eth2client=""
 mnemonic=""
+checkpoint=true
 vault=""
 remove=false
 
@@ -59,6 +60,9 @@ while getopts "hre:c:v:d:m:-:" option; do
                 mnemonic)
                     mnemonic="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                     ;;
+                no-checkpoint)
+                    checkpoint=false
+                    ;;
                 remove)
                     remove=true
                     ;;
@@ -86,20 +90,11 @@ while getopts "hre:c:v:d:m:-:" option; do
         c)
             eth2client=${OPTARG}
             ;;
-        c=*)
-            eth2client=${OPTARG#*=}
-            ;;
         d)
             export DATA_DIR=${OPTARG}
             ;;
-        d=*)
-            export DATA_DIR=${OPTARG#*=}
-            ;;
         e)
             eth1client=${OPTARG}
-            ;;
-        e=*)
-            eth1client=${OPTARG#*=}
             ;;
         h)
             printf "$usagemsg\n"
@@ -108,14 +103,8 @@ while getopts "hre:c:v:d:m:-:" option; do
         m)
             mnemonic=${OPTARG}
             ;;
-        m=*)
-            mnemonic=${OPTARG#*=}
-            ;;
         v)
             vault=${OPTARG}
-            ;;
-        v=*)
-            vault=${OPTARG#*=}
             ;;
         r)
             remove=true
@@ -239,18 +228,22 @@ get_eth2()
     echo 
     echo "Which consensus (eth2) client do you want to use?"
     echo "1) Nimbus (recommended)"
+    echo "2) Teku"
     echo
     read choice
     if [ "$choice" = "1" ] || [ "$choice" = "nimbus" ]; then
         eth2client="nimbus"
     fi
-    if [ "$eth2client" != "nimbus" ]; then
+    if [ "$choice" = "2" ] || [ "$choice" = "teku" ]; then
+        eth2client="teku"
+    fi
+    if [ "$eth2client" != "nimbus" ] && [ "$eth2client" != "teku" ]; then
         get_eth2
     fi
 }
 if [ "$eth2client" = "" ]; then
     get_eth2
-elif [ "$eth2client" != "nimbus" ]; then
+elif [ "$eth2client" != "nimbus" ] && [ "$eth2client" != "teku" ]; then
     echo "Error: incorrect eth2 client name provided."
     printf $usagemsg
     exit 1
@@ -281,26 +274,26 @@ cp "$CLIENT_DIR/$ECNAME.yaml" "$DATA_DIR/$ECNAME.yaml"
 cp "$CLIENT_DIR/$CCNAME.yaml" "$DATA_DIR/$CCNAME.yaml"
 
 ### generate jwtsecret
-if [ ! -e ./tmp/jwtsecret ]; then
+if [ ! -e ./jwtsecret/jwtsecret ]; then
     echo "Generating jwtsecret..."
     # initialize EC, then wait a few seconds for it to create the jwtsecret
     docker compose -f "$DATA_DIR/compose.yaml" up -d $ECNAME
     i=6
-    until [ -f "$DATA_DIR/tmp/jwtsecret" ] || [ $i = 0 ]; do
+    until [ -f "$DATA_DIR/jwtsecret/jwtsecret" ] || [ $i = 0 ]; do
         echo "Waiting for jwtsecret..."
         sleep 5
         i=$((i-1))
     done
-    if [ ! -f "$DATA_DIR/tmp/jwtsecret" ]; then
+    if [ ! -f "$DATA_DIR/jwtsecret/jwtsecret" ]; then
         echo "Error: Could not generate jwtsecret before timeout!"
         exit 3
     fi
 
-    chown $callinguser $DATA_DIR/tmp/jwtsecret || exit 3
+    chown $callinguser $DATA_DIR/jwtsecret/jwtsecret || exit 3
 fi
 
 ### checkpoint sync
-if [ "$NETWORK" != "mainnet" ]; then
+if [ $checkpoint = true ] && [ "$NETWORK" != "mainnet" ]; then
     case $CCNAME in
         nimbus) 
             echo "Performing checkpoint sync..."
@@ -329,7 +322,7 @@ if [[ -d /run/systemd/system ]]; then
     systemctl enable nodeset.service   
 else
     echo "WARNING: you are not using systemd! You will need to create your own boot and shutdown automation."
-    read -p "Press enter to continue..."
+    read -p "Press enter to acknowledge and continue..."
 fi
 
 ### setup stakewise operator
@@ -337,7 +330,12 @@ echo "Pulling latest StakeWise operator binary..."
 docker pull europe-west4-docker.pkg.dev/stakewiselabs/public/v3-operator:master
 
 if [ "$mnemonic" != "" ]; then
+    echo "supplying a mnemonic is not yet supported, please check back later!"
+    exit
+
     echo "Recreating StakeWise configuration using existing mnemonic..."
+    # todo: recover setup using deposit data downloaded from NodeSet API
+    #docker compose run stakewise src/main.py get-validators-root --deposit-data-file=<DEPOSIT DATA FILE>
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py recover --network="$NETWORK" --vault="$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT" --execution-endpoints="http://$ECNAME:$ECAPIPORT" --mnemonic="$mnemonic"
     docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py create-wallet --vault="$VAULT" --mnemonic="$mnemonic"
 else
@@ -363,9 +361,9 @@ echo "Please note that you must have enough Ether in this node wallet to registe
 printf "Each validator takes approximately 0.01 ETH to create when gas is 30 gwei. We recommend depositing AT LEAST 0.1 ETH.\nYou can withdraw this ETH at any time. For more information, see: http://nodeset.io/docs/stakewise\n"
 display_funding_message
 
-### start SW
-echo "Starting StakeWise operator service..."
-docker compose -f "$DATA_DIR/compose.yaml" up -d stakewise
+### start node
+echo "Starting node..."
+sudo bash $SCRIPT_DIR/nodeset.sh -d "$DATA_DIR" start
 
 ### complete
 echo 
