@@ -59,6 +59,8 @@ var initCmd = &cobra.Command{
 			log.Fatalf("network %s is not avaliable, please choose holskey, holskey-dev or main", network)
 		}
 
+		dataDir := viper.GetString("DATA_DIR")
+		log.Infof("Writing config to data path: %s", dataDir)
 		err = os.MkdirAll(dataDir, 0766)
 		if err != nil {
 			log.Error(err)

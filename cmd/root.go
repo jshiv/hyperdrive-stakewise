@@ -5,9 +5,9 @@ package cmd
 
 import (
 	"os"
+	"os/user"
 	"path/filepath"
 
-	homedir "github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -44,47 +44,34 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	dirname, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.node-data/nodeset.env)")
-	rootCmd.PersistentFlags().StringVarP(&dataDir, "directory", "d", "", "data directory (default is $HOME/.node-data/)")
+	//if user is sudo, use the calling user home
+	var callingUser string
+	if os.Geteuid() == 0 { //sudo
+		callingUser = os.Getenv("SUDO_USER")
+		user, err := user.Lookup(callingUser)
+		if err != nil {
+			log.Fatal(err)
+		}
+		dirname = user.HomeDir
+	}
+
+	dataDir := filepath.Join(dirname, ".node-data")
+	rootCmd.PersistentFlags().StringVarP(&dataDir, "directory", "d", dataDir, "data directory")
+
+	//Set the global DataDir and config path based on the gloabal flag
+	viper.Set("DATA_DIR", dataDir)
+	viper.AddConfigPath(dataDir)
+	viper.SetConfigName("nodeset")
+	viper.SetConfigType("env")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-var (
-	cfgFile     string
-	dataDir     string
-	nodesetFile string
-)
-
-func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Fatal(err)
-			os.Exit(1)
-		}
-
-		if dataDir == "" {
-			dataDir = filepath.Join(home, ".node-data")
-		}
-
-		if nodesetFile == "" {
-			nodesetFile = "nodeset.env"
-		}
-
-		viper.AddConfigPath(dataDir)
-		viper.SetConfigName(nodesetFile)
-		viper.SetConfigType("env")
-	}
 }
