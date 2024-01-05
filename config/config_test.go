@@ -34,7 +34,7 @@ func TestSetViperAndWriteConfig(t *testing.T) {
 	testDir := "TestSetViperAndWriteConfig"
 	os.Mkdir(testDir, 0755)
 	defer os.RemoveAll(testDir)
-	c.SetConfigPath(testDir)
+	SetConfigPath(testDir)
 	err := c.WriteConfig()
 	if err != nil {
 		t.Errorf("failed to write config file: %v", err)

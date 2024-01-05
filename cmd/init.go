@@ -28,7 +28,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initalizes the ~/.node-data/ directory with nodeset.env, compose.yaml and the ec and cc docker files.",
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Info("init called")
+		log.Info("{::} Welcome to the NodeSet config script for StakeWise {::}")
 		network, _ := cmd.Flags().GetString("network")
 		ecName, _ := cmd.Flags().GetString("ecname")
 		if ecName == "" {
@@ -60,6 +60,7 @@ var initCmd = &cobra.Command{
 		}
 
 		dataDir := viper.GetString("DATA_DIR")
+		c.DataDir = dataDir
 		log.Infof("Writing config to data path: %s", dataDir)
 		err = os.MkdirAll(dataDir, 0766)
 		if err != nil {
@@ -71,10 +72,10 @@ var initCmd = &cobra.Command{
 		viper.Set("ECNAME", ecName)
 		viper.Set("CCNAME", ccName)
 
-		err = c.SetConfigPath(dataDir)
-		if err != nil {
-			log.Fatal(err)
-		}
+		// err = config.SetConfigPath(dataDir)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 		err = c.WriteConfig()
 		if err != nil {
 			log.Fatal(err)
@@ -142,7 +143,7 @@ func init() {
 	// is called directly, e.g.:
 	initCmd.Flags().StringP("network", "n", "holskey", "Select the network [main, holskey is Default]")
 	initCmd.Flags().StringP("ecname", "e", "", "Select the execution client [geth, nethermind]")
-	initCmd.Flags().StringP("ccname", "c", "", "Select the consensus client [nimbus]")
+	initCmd.Flags().String("ccname", "", "Select the consensus client [nimbus]")
 
 }
 

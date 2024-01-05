@@ -19,6 +19,7 @@ func Test_InitCommand(t *testing.T) {
 		"--network=holskey-dev",
 		fmt.Sprintf("--directory=./%s/", testDir),
 		"--ecname=nethermind",
+		"--config=nodeset.json",
 	})
 	err := rootCmd.Execute()
 	if err != nil {

@@ -4,8 +4,13 @@ import (
 	"errors"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	"github.com/spf13/viper"
+)
+
+var (
+	ConfigFile = "nodeset.env"
 )
 
 type Config struct {
@@ -84,20 +89,23 @@ func (c Config) SetViper() {
 
 }
 
-func (c *Config) SetConfigPath(dir string) error {
+func SetConfigPath(dir string) error {
 	dirAbs, err := filepath.Abs(dir)
 	if err != nil {
 		return err
 	}
 	viper.Set("DATA_DIR", dirAbs)
-	viper.AddConfigPath(dir)
+	viper.AddConfigPath(dirAbs)
+
+	parts := strings.Split(ConfigFile, ".")
+	name := parts[0]
+	ty := parts[1]
+	viper.SetConfigName(name)
+	viper.SetConfigType(ty)
 	return nil
 }
 
 func (c *Config) WriteConfig() error {
-
-	viper.SetConfigName("nodeset")
-	viper.SetConfigType("env")
 
 	err := viper.SafeWriteConfig()
 	if err != nil {
