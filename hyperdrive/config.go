@@ -1,4 +1,4 @@
-package config
+package hyperdrive
 
 import (
 	"errors"
@@ -27,6 +27,8 @@ type Config struct {
 	ConsensusClientPort    string `mapstructure:"CCPORT"`
 	ConsensusClientAPIPort string `mapstructure:"CCAPIPORT"`
 	NumKeys                string `mapstructure:"NUMKEYS"`
+	Checkpoint             bool   `mapstructure:"CHECKPOINT"`
+	CheckpointURL          string `mapstructure:"CHECKPOINT_URL"`
 }
 
 var (
