@@ -34,7 +34,7 @@ The --clean option will run execute "docker compose down --remove-orphans" which
 		var removeOrphans string
 		if clean {
 			prompt := promptui.Select{
-				Label: "This will remove any containers not associated with your NodeSet-StakeWise configurationAre, you sure you want to continue?",
+				Label: "This will remove all containers, even those not associated with your NodeSet-StakeWise configuration, Are you sure you want to continue?",
 				Items: []string{"n", "y"},
 			}
 			var err error
