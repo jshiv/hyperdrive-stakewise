@@ -23,21 +23,10 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "hyperdrive-stakewise",
 		Short: "A brief description of your application",
-		Long: `{::} NodeSet Hyperdrive - StakeWise | VERSION {::}
+		Long: `{::} NodeSet Hyperdrive - StakeWise {::}
 
-	Usage: 
-	
-		nodeset [OPTIONS] COMMAND
-	
-	Options: 
-	
-		-h, --help
-	
-			Show this message
-	
-		-d directory, --data-directory=directory
-	
-			Specify location for the configuration directory. Default is /home/$USER/.node-data.`,
+This script must be run with root privileges.
+	`,
 	}
 )
 
