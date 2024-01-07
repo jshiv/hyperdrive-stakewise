@@ -51,7 +51,14 @@ The --clean option will run execute "docker compose down --remove-orphans" which
 				removeOrphans = "--remove-orphans"
 			}
 		}
-		text := fmt.Sprintf("docker compose  -f compose.yaml -f compose.internal.yaml down %s", removeOrphans)
+
+		var composeFile string
+		if c.InternalClients {
+			composeFile = "-f compose.yaml -f compose.internal.yaml"
+		} else {
+			composeFile = "-f compose.yaml"
+		}
+		text := fmt.Sprintf("docker compose %s down %s", composeFile, removeOrphans)
 		log.Info(text)
 		err = c.ExecCommand(text)
 		if err != nil {
