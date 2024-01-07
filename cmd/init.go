@@ -129,30 +129,32 @@ var initCmd = &cobra.Command{
 		//set the viper config with defaults before overwriting the values below
 		c.SetViper()
 
-		//Interactive prompt for setting ports
-		prompt := promptui.Prompt{
-			Label:   "Execution Client Port",
-			Default: "30303",
-		}
+		if useInternalClients {
+			//Interactive prompt for setting ports
+			prompt := promptui.Prompt{
+				Label:   "Execution Client Port",
+				Default: "30303",
+			}
 
-		ecPort, err := prompt.Run()
-		if err != nil {
-			fmt.Printf("Prompt failed %v\n", err)
-			log.Fatal(err)
-		}
-		viper.Set("ECPORT", ecPort)
+			ecPort, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+			viper.Set("ECPORT", ecPort)
 
-		prompt = promptui.Prompt{
-			Label:   "Concensus Client Port",
-			Default: "9000",
-		}
+			prompt = promptui.Prompt{
+				Label:   "Concensus Client Port",
+				Default: "9000",
+			}
 
-		ccPort, err := prompt.Run()
-		if err != nil {
-			fmt.Printf("Prompt failed %v\n", err)
-			log.Fatal(err)
+			ccPort, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+			viper.Set("CCPORT", ccPort)
 		}
-		viper.Set("CCPORT", ccPort)
 
 		if checkpoint && useInternalClients {
 			prompt := promptui.Prompt{
