@@ -51,14 +51,19 @@ else
     fi
 fi
 
+if [ $ECNAME != "external" ]; then
+    composeFile=(-f "$DATA_DIR/compose.yaml" -f "$DATA_DIR/compose.internal.yaml")
+else
+    composeFile=(-f "$DATA_DIR/compose.yaml")
+fi
+
 echo "Removing previous configuration..."
 
 # if a configuration exists, shut it down first
 if [ -f "$DATA_DIR/nodeset.env" ]; then
     echo "Shutting down containers..."
-    docker compose -f "$DATA_DIR/compose.yaml" down -v
+    docker compose ${composeFile[@]} down -v
 fi
-
 
 # clear old data (if any)
 if [ -d "$DATA_DIR" ]; then
