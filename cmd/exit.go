@@ -17,7 +17,7 @@ import (
 // exitCmd represents the exit command
 var exitCmd = &cobra.Command{
 	Use:   "exit",
-	Short: "exit all validators for the node",
+	Short: "Exit all validators for the node.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
