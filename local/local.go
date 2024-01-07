@@ -10,3 +10,6 @@ var Vaults embed.FS
 
 //go:embed compose.yaml
 var Compose []byte
+
+//go:embed compose.internal.yaml
+var ComposeInternal []byte

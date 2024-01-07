@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	ConfigFile = "nodeset.env"
+	ConfigFile                = "nodeset.env"
+	ErrorCanNotFindConfigFile = errors.New("Are you sure this data directory is correct? If so, you must recover your configuration manually. Try running the init command")
 )
 
 type Config struct {
@@ -23,12 +24,17 @@ type Config struct {
 	ExceutionClientPort    string `mapstructure:"ECPORT"`
 	ExceutionClientAPIPort string `mapstructure:"ECAPIPORT"`
 	ExceutionClientRPCPort string `mapstructure:"ECRPCPORT"`
+	// http://$ECNAME
+	ExceutionClientURL     string `mapstructure:"ECURL"`
 	ConsensusClientName    string `mapstructure:"CCNAME"`
 	ConsensusClientPort    string `mapstructure:"CCPORT"`
 	ConsensusClientAPIPort string `mapstructure:"CCAPIPORT"`
-	NumKeys                string `mapstructure:"NUMKEYS"`
-	Checkpoint             bool   `mapstructure:"CHECKPOINT"`
-	CheckpointURL          string `mapstructure:"CHECKPOINT_URL"`
+	//CCURL=http://$CCNAME
+	ConsensusClientURL string `mapstructure:"CCURL"`
+	NumKeys            string `mapstructure:"NUMKEYS"`
+	Checkpoint         bool   `mapstructure:"CHECKPOINT"`
+	CheckpointURL      string `mapstructure:"CHECKPOINT_URL"`
+	InternalClients    bool   `mapstructure:"INTERNAL_CLIENTS"`
 }
 
 var (
@@ -37,7 +43,7 @@ var (
 		Name:                   "holesky",
 		Vault:                  "0x646F5285D195e08E309cF9A5aDFDF68D6Fcc51C4",
 		FeeRecipient:           "0xc98F25BcAA6B812a07460f18da77AF8385be7b56",
-		ExceutionClientName:    "geth",
+		ExceutionClientName:    "",
 		ExceutionClientPort:    "30303",
 		ExceutionClientAPIPort: "8545",
 		ExceutionClientRPCPort: "8551",
@@ -51,11 +57,11 @@ var (
 		Name:                   "holesky",
 		Vault:                  "0x01b353Abc66A65c4c0Ac9c2ecF82e693Ce0303Bc",
 		FeeRecipient:           "0xc98F25BcAA6B812a07460f18da77AF8385be7b56",
-		ExceutionClientName:    "geth",
+		ExceutionClientName:    "",
 		ExceutionClientPort:    "30303",
 		ExceutionClientAPIPort: "8545",
 		ExceutionClientRPCPort: "8551",
-		ConsensusClientName:    "nimbus",
+		ConsensusClientName:    "",
 		ConsensusClientPort:    "9000",
 		ConsensusClientAPIPort: "5052",
 		NumKeys:                "1",
@@ -66,11 +72,11 @@ var (
 		Name:                   "gravita",
 		Vault:                  "",
 		FeeRecipient:           "",
-		ExceutionClientName:    "geth",
+		ExceutionClientName:    "",
 		ExceutionClientPort:    "30303",
 		ExceutionClientAPIPort: "8545",
 		ExceutionClientRPCPort: "8551",
-		ConsensusClientName:    "nimbus",
+		ConsensusClientName:    "",
 		ConsensusClientPort:    "9000",
 		ConsensusClientAPIPort: "5052",
 		NumKeys:                "1",
@@ -86,7 +92,11 @@ func (c Config) SetViper() {
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
 		k := field.Tag.Get("mapstructure")
-		viper.Set(k, v.Field(i).Interface())
+		value := v.Field(i).Interface()
+		if value != "" {
+			viper.Set(k, v.Field(i).Interface())
+		}
+
 	}
 
 }

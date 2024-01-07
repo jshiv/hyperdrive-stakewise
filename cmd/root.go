@@ -57,9 +57,9 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// if !hyperdrive.IsRoot() {
-	// 	log.Fatal("Please run as root (or with sudo)")
-	// }
+	if !hyperdrive.IsRoot() {
+		log.Fatal("Please run as root (or with sudo)")
+	}
 
 	dirname, err := hyperdrive.CallingUserHomeDir()
 	if err != nil {

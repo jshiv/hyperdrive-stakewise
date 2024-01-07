@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,17 +29,42 @@ var initCmd = &cobra.Command{
 		fmt.Printf("{::} Welcome to the NodeSet config script for StakeWise {::}")
 
 		remove, _ := cmd.Flags().GetBool("remove")
-		if remove {
-			err := os.RemoveAll(dataDir)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
 		network, _ := cmd.Flags().GetString("network")
+		internalFlag, _ := cmd.Flags().GetString("internal")
+		var useInternalClients bool
 		ecName, _ := cmd.Flags().GetString("ecname")
+		ccName, _ := cmd.Flags().GetString("ccname")
 		checkpoint, _ := cmd.Flags().GetBool("checkpoint")
 
-		if ecName == "" {
+		//if not external, provide options to user
+		if internalFlag == "" {
+			prompt := promptui.Select{
+				Label: "How do you want to manage your client configuration?",
+				Items: []string{"External (recommended)", "Internal"},
+			}
+			var err error
+			_, result, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+
+			switch result {
+			case "External (recommended)":
+				useInternalClients = false
+			case "Internal":
+				useInternalClients = true
+			default:
+				useInternalClients = true
+			}
+
+		} else if strings.ToLower(internalFlag) == "true" {
+			useInternalClients = true
+		} else if strings.ToLower(internalFlag) == "false" {
+			useInternalClients = false
+		}
+
+		if ecName == "" && useInternalClients {
 			prompt := promptui.Select{
 				Label: "Select Execution Client",
 				Items: []string{"geth", "nethermind"},
@@ -51,8 +77,7 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		ccName, _ := cmd.Flags().GetString("ccname")
-		if ccName == "" {
+		if ccName == "" && useInternalClients {
 			prompt := promptui.Select{
 				Label: "Select Concensus Client",
 				Items: []string{"nimbus", "teku"},
@@ -91,7 +116,21 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		if checkpoint {
+		if remove {
+			if c.Network == "mainnet" {
+				log.Error("remove=true, init script can not remove data dirctory on mainnet, try using the remove command")
+			} else {
+				err := os.RemoveAll(dataDir)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+
+		}
+		//set the viper config with defaults before overwriting the values below
+		c.SetViper()
+
+		if checkpoint && useInternalClients {
 			prompt := promptui.Prompt{
 				Label:   "Provide Checkpoint Sync URL",
 				Default: "https://checkpoint-sync.holesky.ethpandaops.io",
@@ -102,8 +141,8 @@ var initCmd = &cobra.Command{
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
 			}
-			c.Checkpoint = checkpoint
-			c.CheckpointURL = checkpointURL
+			viper.Set("CHECKPOINT", checkpoint)
+			viper.Set("CHECKPOINT_URL", checkpointURL)
 		}
 
 		dataDir := viper.GetString("DATA_DIR")
@@ -114,10 +153,42 @@ var initCmd = &cobra.Command{
 			log.Error(err)
 		}
 
-		c.SetViper()
 		//Ensure that nodeset.env contains the correct ECNAME and CCNAME
-		viper.Set("ECNAME", ecName)
-		viper.Set("CCNAME", ccName)
+		if useInternalClients {
+			// c.InternalClients = true
+			viper.Set("INTERNAL_CLIENTS", true)
+			viper.Set("ECNAME", ecName)
+			viper.Set("CCNAME", ccName)
+			viper.Set("ECURL", fmt.Sprintf("http://%s", ecName))
+			viper.Set("CCURL", fmt.Sprintf("http://%s", ccName))
+		} else {
+			c.InternalClients = false
+			viper.Set("ECNAME", "external")
+			viper.Set("CCNAME", "external")
+			prompt := promptui.Prompt{
+				Label:   "Please enter your eth1 (execution) client URL, excluding ports.",
+				Default: "http://127.0.0.1",
+			}
+			var err error
+			ecURL, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+			viper.Set("ECURL", ecURL)
+
+			prompt = promptui.Prompt{
+				Label:   "Please enter your eth2 (consensus) client URL, excluding ports.",
+				Default: "http://127.0.0.1",
+			}
+
+			ccURL, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+			viper.Set("CCURL", ccURL)
+		}
 
 		err = c.WriteConfig()
 		if err != nil {
@@ -130,43 +201,50 @@ var initCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		//Select EL client
-		ecCompose, err := local.Clients.ReadFile(fmt.Sprintf("clients/%s.yaml", ecName))
-		if err != nil {
-			log.Error(err)
-		}
-		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ecName)), ecCompose, 0766)
+		//Write the compose internal file
+		err = os.WriteFile(filepath.Join(dataDir, "compose.internal.yaml"), local.ComposeInternal, 0766)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		//Select CC client
-		ccCompose, err := local.Clients.ReadFile(fmt.Sprintf("clients/%s.yaml", ccName))
-		if err != nil {
-			log.Error(err)
-		}
-		err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ccName)), ccCompose, 0766)
-		if err != nil {
-			log.Fatal(err)
-		}
+		if useInternalClients {
+			//Select EL client
+			ecCompose, err := local.Clients.ReadFile(fmt.Sprintf("clients/%s.yaml", ecName))
+			if err != nil {
+				log.Error(err)
+			}
+			err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ecName)), ecCompose, 0766)
+			if err != nil {
+				log.Fatal(err)
+			}
+			//Select CC client
+			ccCompose, err := local.Clients.ReadFile(fmt.Sprintf("clients/%s.yaml", ccName))
+			if err != nil {
+				log.Error(err)
+			}
+			err = os.WriteFile(filepath.Join(dataDir, fmt.Sprintf("%s.yaml", ccName)), ccCompose, 0766)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		//from install.sh
-		// prep data directory
-		// mkdir $DATA_DIR/$CCNAME-data
-		// mkdir $DATA_DIR/stakewise-data
-		// chown $callinguser $DATA_DIR/$CCNAME-data
-		// chmod 700 $DATA_DIR/$CCNAME-data
-		// # v3-operator user is "nobody" for safety since keys are stored there
-		// # you will need to use root to access this directory
-		// chown nobody $DATA_DIR/stakewise-data
-		u, err := hyperdrive.CallingUser()
-		if err != nil {
-			log.Errorf("error looking up calling user user info: %e", err)
+			//from install.sh
+			// prep data directory
+			// mkdir $DATA_DIR/$CCNAME-data
+			// mkdir $DATA_DIR/stakewise-data
+			// chown $callinguser $DATA_DIR/$CCNAME-data
+			// chmod 700 $DATA_DIR/$CCNAME-data
+			// # v3-operator user is "nobody" for safety since keys are stored there
+			// # you will need to use root to access this directory
+			// chown nobody $DATA_DIR/stakewise-data
+			u, err := hyperdrive.CallingUser()
+			if err != nil {
+				log.Errorf("error looking up calling user user info: %e", err)
+			}
+			os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), 0700)
+			hyperdrive.Chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
+			os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ecName)), 0700)
+			hyperdrive.Chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
 		}
-		os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), 0700)
-		hyperdrive.Chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
-		os.MkdirAll(filepath.Join(dataDir, fmt.Sprintf("%s-data", ecName)), 0700)
-		hyperdrive.Chown(filepath.Join(dataDir, fmt.Sprintf("%s-data", ccName)), u)
 		os.MkdirAll(filepath.Join(dataDir, "stakewise-data"), 0700)
 		nobody, err := user.Lookup("nobody")
 		hyperdrive.Chown(filepath.Join(dataDir, "stakewise-data"), nobody)
@@ -186,9 +264,10 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	initCmd.Flags().StringP("network", "n", "", "Select the network")
-	initCmd.Flags().StringP("ecname", "e", "", "Select the execution client [geth, nethermind]")
-	initCmd.Flags().String("ccname", "", "Select the consensus client [nimbus]")
+	initCmd.Flags().String("ecname", "", "Select the execution client [geth, nethermind]")
+	initCmd.Flags().String("ccname", "", "Select the consensus client [nimbus, teku]")
+	initCmd.Flags().String("internal", "", "Manage the client configuration with internal clients")
 	initCmd.Flags().BoolP("remove", "r", false, "Remove the existing installation (if any) in the specified data directory before proceeding with the installation.")
-	initCmd.Flags().Bool("checkpoint", false, "Remove the existing installation (if any) in the specified data directory before proceeding with the installation.")
+	initCmd.Flags().Bool("checkpoint", true, "Sync the consensus client from latest")
 
 }
