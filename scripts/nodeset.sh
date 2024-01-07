@@ -120,6 +120,10 @@ case "$1" in
         printf "$usagemsg"
         exit
         ;;
+    logs)
+        "$SCRIPT_DIR/logs.sh" "$2"
+        exit $?
+        ;;
     remove)
         "$SCRIPT_DIR/remove.sh"
         exit $?
@@ -150,10 +154,6 @@ case "$1" in
         ;;
     start)
         "$SCRIPT_DIR/start.sh"
-        exit $?
-        ;;
-    logs)
-        "$SCRIPT_DIR/logs.sh" "$2"
         exit $?
         ;;
     version)

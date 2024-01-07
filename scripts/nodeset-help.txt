@@ -18,8 +18,9 @@ Commands:
 
     exit        Exit all validators
     help        Show this message
-    logs        Show node logs
-    shutdown    Shut down the node
+    logs        Show node logs. You may filter by specifying the container name (i.e. stakewise).
     remove      Delete the existing installation (without exiting validators)
+    restart     Shut down and then start the node
+    shutdown    Shut down the node. Use with --clean to delete orphaned containers (be careful!)
     start       Start the node
     version     Show version

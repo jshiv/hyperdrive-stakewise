@@ -20,6 +20,14 @@ Options:
 
         Specify an execution (eth1) client to use. Currently supported options: nethermind, geth
 
+    --eth1url=url
+    
+        Specify the url to use for an external execution (eth1) client.
+
+    --eth2url=url
+    
+        Specify the url to use for an external consensus (eth2) client.
+
     -h, --help
 
         Display this message
@@ -27,6 +35,10 @@ Options:
     -m mnemonic-string, --mnemonic=mnemonic-string
 
         Create a configuration using an existing mnemonic instead of generating a new one.
+
+    --no-checkpoint
+
+        Skip checkpoing sync (where applicable)
 
     -v vault, --vault=vault 
 
