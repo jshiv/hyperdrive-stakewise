@@ -43,6 +43,10 @@ The --clean option will run execute "docker compose down --remove-orphans" which
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
 			}
+			if result == "n" {
+				color.HiWhite("Quitting stop")
+				return
+			}
 			if result == "y" {
 				removeOrphans = "--remove-orphans"
 			}
