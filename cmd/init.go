@@ -36,6 +36,31 @@ var initCmd = &cobra.Command{
 		ccName, _ := cmd.Flags().GetString("ccname")
 		checkpoint, _ := cmd.Flags().GetBool("checkpoint")
 
+		var err error
+		var c hyperdrive.Config
+		if network == "" {
+			prompt := promptui.Select{
+				Label: "Select Network",
+				Items: []string{"NodeSet Test Vault (holesky)", "Gravita (mainnet)", "NodeSet Dev Vault (holskey-dev)"},
+			}
+			var err error
+			_, network, err = prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+			switch network {
+			case "NodeSet Test Vault (holesky)":
+				c = hyperdrive.Holskey
+			case "NodeSet Dev Vault (holskey-dev)":
+				c = hyperdrive.HoleskyDev
+			case "Gravita (mainnet)":
+				c = hyperdrive.Gravita
+
+			default:
+				log.Fatalf("network %s is not avaliable, please choose holskey, holskey-dev or Gravita", network)
+			}
+		}
 		//if not external, provide options to user
 		if internalFlag == "" {
 			prompt := promptui.Select{
@@ -90,32 +115,6 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		var err error
-		var c hyperdrive.Config
-		if network == "" {
-			prompt := promptui.Select{
-				Label: "Select Network",
-				Items: []string{"NodeSet Test Vault (holesky)", "Gravita (mainnet)", "NodeSet Dev Vault (holskey-dev)"},
-			}
-			var err error
-			_, network, err = prompt.Run()
-			if err != nil {
-				fmt.Printf("Prompt failed %v\n", err)
-				log.Fatal(err)
-			}
-			switch network {
-			case "NodeSet Test Vault (holesky)":
-				c = hyperdrive.Holskey
-			case "NodeSet Dev Vault (holskey-dev)":
-				c = hyperdrive.HoleskyDev
-			case "Gravita (mainnet)":
-				c = hyperdrive.Gravita
-
-			default:
-				log.Fatalf("network %s is not avaliable, please choose holskey, holskey-dev or Gravita", network)
-			}
-		}
-
 		if remove {
 			if c.Network == "mainnet" {
 				log.Error("remove=true, init script can not remove data dirctory on mainnet, try using the remove command")
@@ -129,6 +128,31 @@ var initCmd = &cobra.Command{
 		}
 		//set the viper config with defaults before overwriting the values below
 		c.SetViper()
+
+		//Interactive prompt for setting ports
+		prompt := promptui.Prompt{
+			Label:   "Execution Client Port",
+			Default: "30303",
+		}
+
+		ecPort, err := prompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt failed %v\n", err)
+			log.Fatal(err)
+		}
+		viper.Set("ECPORT", ecPort)
+
+		prompt = promptui.Prompt{
+			Label:   "Concensus Client Port",
+			Default: "9000",
+		}
+
+		ccPort, err := prompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt failed %v\n", err)
+			log.Fatal(err)
+		}
+		viper.Set("CCPORT", ccPort)
 
 		if checkpoint && useInternalClients {
 			prompt := promptui.Prompt{
