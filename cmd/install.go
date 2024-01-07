@@ -175,7 +175,7 @@ to quickly create a Cobra application.`,
 
 		// pull latest container images
 		log.Info("Updating...")
-		text := fmt.Sprintf("docker %s pull", composeFile)
+		text := fmt.Sprintf("docker compose %s pull", composeFile)
 		log.Infof(text)
 		err = c.ExecCommand(text)
 		if err != nil {
@@ -183,7 +183,7 @@ to quickly create a Cobra application.`,
 		}
 
 		// start containers
-		text = fmt.Sprintf("docker %s up -d", composeFile)
+		text = fmt.Sprintf("docker compose %s up -d", composeFile)
 		log.Infof(text)
 		err = c.ExecCommand(text)
 		if err != nil {
