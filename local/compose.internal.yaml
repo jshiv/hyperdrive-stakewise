@@ -1,0 +1,9 @@
+include:
+  - "$DATA_DIR/$ECNAME.yaml"
+  - "$DATA_DIR/$CCNAME.yaml"
+
+services:
+  stakewise:
+    depends_on:
+      - $ECNAME
+      - $CCNAME

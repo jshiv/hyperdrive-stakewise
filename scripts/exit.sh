@@ -3,7 +3,7 @@
 if [ "$NETWORK" = "mainnet" ]; then
 
     # todo: also check if there are any active validators before giving this warning
-    # i.e. docker compose up geth "check validators request"
+    # i.e. docker compose up nimbus "check if validators exist"
     echo "DANGER: You are attempting to exit your mainnet validators!"
     echg "You should ONLY do this if you are sure that you don't want to run these validators anymore."
     echo "Once you do this, you must pay the initialization gas fees again if you want to run more validators for this vault."
@@ -44,7 +44,13 @@ else
     }
 fi
 
+if [ $ECNAME != "external" ]; then
+    composeFile=("$DATA_DIR/compose.yaml" "$DATA_DIR/compose.internal.yaml")
+else
+    composeFile=("$DATA_DIR/compose.yaml")
+fi
+
 # if validators are active 
-docker compose -f "$DATA_DIR/compose.yaml" run stakewise src/main.py validators-exit --vault "$VAULT" --consensus-endpoints="http://$CCNAME:$CCAPIPORT"
+docker compose -f "$composefile" run stakewise src/main.py validators-exit --vault "$VAULT" --consensus-endpoints="$CCURL:$CCAPIPORT"
 # else
 # tell NodeSet to remove them from deposit queue

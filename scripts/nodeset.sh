@@ -104,6 +104,12 @@ if [ "$1" != "help" ]; then
     fi
 fi
 
+if [ $ECNAME != "external" ]; then
+    composeFile=(-f "$DATA_DIR/compose.yaml" -f "$DATA_DIR/compose.internal.yaml")
+else
+    composeFile=(-f "$DATA_DIR/compose.yaml")
+fi
+
 # check command name makes sense
 case "$1" in
     exit)
@@ -114,21 +120,40 @@ case "$1" in
         printf "$usagemsg"
         exit
         ;;
+    logs)
+        "$SCRIPT_DIR/logs.sh" "$2"
+        exit $?
+        ;;
     remove)
         "$SCRIPT_DIR/remove.sh"
         exit $?
         ;;
+    restart)
+        "$SCRIPT_DIR/nodeset.sh" -d "$DATA_DIR" shutdown
+        if [ $? != 0 ]; then
+            exit $?
+        fi
+        "$SCRIPT_DIR/nodeset.sh" -d "$DATA_DIR" start
+        exit $?
+        ;;
     shutdown)
-        echo "Shutting down containers..."
-        docker compose -f "$DATA_DIR/compose.yaml" down
+        echo "Shutting down..."
+        if [ "$2" = "--clean" ]; then
+            echo "WARNING: Using the --clean option for shutdown will remove any containers not associated with your NodeSet-StakeWise configuration."
+            echo "Are you sure you want to continue? (y/n)"
+            read answer
+            if [[ $answer != "y" && $answer != "yes" ]]; then
+                exit
+            else
+                docker compose ${composeFile[@]} down --remove-orphans
+            fi
+        else
+            docker compose ${composeFile[@]} down
+        fi
         exit $?
         ;;
     start)
         "$SCRIPT_DIR/start.sh"
-        exit $?
-        ;;
-    logs)
-        "$SCRIPT_DIR/logs.sh" "$2"
         exit $?
         ;;
     version)
