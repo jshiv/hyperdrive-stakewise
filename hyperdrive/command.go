@@ -31,21 +31,6 @@ func (c Config) ExecCommand(text string) error {
 // Builds a command incuding setting the dataDir and environ from Config and os.Environ()
 func (c Config) BuildCommand(text string) (*exec.Cmd, error) {
 
-	// var cmd *exec.Cmd
-	// switch text.(type) {
-	// case string:
-	// 	txt := text.(string)
-	// 	cmd = exec.Command("sh", "-c", txt)
-	// case []string:
-	// 	txt := text.([]string)
-	// 	if len(txt) == 1 {
-	// 		cmd = exec.Command(txt[0])
-	// 	} else {
-	// 		cmd = exec.Command(txt[0], txt[1:]...)
-	// 	}
-
-	// }
-
 	cmd := exec.Command("sh", "-c", text)
 
 	cmd.Dir = c.DataDir
