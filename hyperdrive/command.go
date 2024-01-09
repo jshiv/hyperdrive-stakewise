@@ -28,10 +28,6 @@ func (c Config) ExecCommand(text string) error {
 	return cmd.Wait()
 }
 
-type StringSlice interface {
-	string | []string
-}
-
 // Builds a command incuding setting the dataDir and environ from Config and os.Environ()
 func (c Config) BuildCommand(text string) (*exec.Cmd, error) {
 

@@ -5,7 +5,6 @@ import (
 	"os/user"
 	"runtime"
 	"strconv"
-	"syscall"
 )
 
 func IsRoot() bool {
@@ -45,7 +44,7 @@ func Chown(dir string, u *user.User) error {
 		uid, _ := strconv.Atoi(u.Uid)
 		gid, _ := strconv.Atoi(u.Gid)
 
-		err := syscall.Chown(dir, uid, gid)
+		err := os.Chown(dir, uid, gid)
 		if err != nil {
 			return err
 		}
