@@ -27,3 +27,5 @@ services:
       # http API
       - "$ECAPIPORT/tcp"
       - "$ECAPIPORT/udp"
+    networks:
+      - hyperdrive-stakewise

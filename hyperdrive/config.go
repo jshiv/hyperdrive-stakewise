@@ -30,56 +30,64 @@ type Config struct {
 	ConsensusClientPort    string `mapstructure:"CCPORT"`
 	ConsensusClientAPIPort string `mapstructure:"CCAPIPORT"`
 	//CCURL=http://$CCNAME
-	ConsensusClientURL string `mapstructure:"CCURL"`
-	NumKeys            string `mapstructure:"NUMKEYS"`
-	Checkpoint         bool   `mapstructure:"CHECKPOINT"`
-	CheckpointURL      string `mapstructure:"CHECKPOINT_URL"`
-	InternalClients    bool   `mapstructure:"INTERNAL_CLIENTS"`
+	ConsensusClientURL      string `mapstructure:"CCURL"`
+	NumKeys                 string `mapstructure:"NUMKEYS"`
+	Checkpoint              bool   `mapstructure:"CHECKPOINT"`
+	CheckpointURL           string `mapstructure:"CHECKPOINT_URL"`
+	InternalClients         bool   `mapstructure:"INTERNAL_CLIENTS"`
+	DockerNetwork           string `mapstructure:"DOCKER_NETWORK"`
+	IsExternalDockerNetwork bool   `mapstructure:"IS_EXTERNAL_DOCKER_NETWORK"`
 }
 
 var (
 	Holskey = Config{
-		Network:                "holesky",
-		Name:                   "holesky",
-		Vault:                  "0x646F5285D195e08E309cF9A5aDFDF68D6Fcc51C4",
-		FeeRecipient:           "0xc98F25BcAA6B812a07460f18da77AF8385be7b56",
-		ExceutionClientName:    "",
-		ExceutionClientPort:    "30303",
-		ExceutionClientAPIPort: "8545",
-		ExceutionClientRPCPort: "8551",
-		ConsensusClientName:    "nimbus",
-		ConsensusClientPort:    "9000",
-		ConsensusClientAPIPort: "5052",
-		NumKeys:                "1",
+		Network:                 "holesky",
+		Name:                    "holesky",
+		Vault:                   "0x646F5285D195e08E309cF9A5aDFDF68D6Fcc51C4",
+		FeeRecipient:            "0xc98F25BcAA6B812a07460f18da77AF8385be7b56",
+		ExceutionClientName:     "",
+		ExceutionClientPort:     "30303",
+		ExceutionClientAPIPort:  "8545",
+		ExceutionClientRPCPort:  "8551",
+		ConsensusClientName:     "nimbus",
+		ConsensusClientPort:     "9000",
+		ConsensusClientAPIPort:  "5052",
+		NumKeys:                 "1",
+		DockerNetwork:           "hyperdrive-stakewise-net",
+		IsExternalDockerNetwork: false,
 	}
 	HoleskyDev = Config{
-		Network:                "holesky",
-		Name:                   "holesky",
-		Vault:                  "0x01b353Abc66A65c4c0Ac9c2ecF82e693Ce0303Bc",
-		FeeRecipient:           "0xc98F25BcAA6B812a07460f18da77AF8385be7b56",
-		ExceutionClientName:    "",
-		ExceutionClientPort:    "30303",
-		ExceutionClientAPIPort: "8545",
-		ExceutionClientRPCPort: "8551",
-		ConsensusClientName:    "",
-		ConsensusClientPort:    "9000",
-		ConsensusClientAPIPort: "5052",
-		NumKeys:                "1",
+		Network:                 "holesky",
+		Name:                    "holesky",
+		Vault:                   "0x01b353Abc66A65c4c0Ac9c2ecF82e693Ce0303Bc",
+		FeeRecipient:            "0xc98F25BcAA6B812a07460f18da77AF8385be7b56",
+		ExceutionClientName:     "",
+		ExceutionClientPort:     "30303",
+		ExceutionClientAPIPort:  "8545",
+		ExceutionClientRPCPort:  "8551",
+		ConsensusClientName:     "",
+		ConsensusClientPort:     "9000",
+		ConsensusClientAPIPort:  "5052",
+		NumKeys:                 "1",
+		DockerNetwork:           "hyperdrive-stakewise-net",
+		IsExternalDockerNetwork: false,
 	}
 
 	Gravita = Config{
-		Network:                "mainnet",
-		Name:                   "gravita",
-		Vault:                  "",
-		FeeRecipient:           "",
-		ExceutionClientName:    "",
-		ExceutionClientPort:    "30303",
-		ExceutionClientAPIPort: "8545",
-		ExceutionClientRPCPort: "8551",
-		ConsensusClientName:    "",
-		ConsensusClientPort:    "9000",
-		ConsensusClientAPIPort: "5052",
-		NumKeys:                "1",
+		Network:                 "mainnet",
+		Name:                    "gravita",
+		Vault:                   "",
+		FeeRecipient:            "",
+		ExceutionClientName:     "",
+		ExceutionClientPort:     "30303",
+		ExceutionClientAPIPort:  "8545",
+		ExceutionClientRPCPort:  "8551",
+		ConsensusClientName:     "",
+		ConsensusClientPort:     "9000",
+		ConsensusClientAPIPort:  "5052",
+		NumKeys:                 "1",
+		DockerNetwork:           "hyperdrive-stakewise-net",
+		IsExternalDockerNetwork: false,
 	}
 )
 

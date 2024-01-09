@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -193,7 +194,7 @@ var initCmd = &cobra.Command{
 			viper.Set("CCNAME", "external")
 			prompt := promptui.Prompt{
 				Label:   "Please enter your eth1 (execution) client URL, excluding ports.",
-				Default: "http://127.0.0.1",
+				Default: "http://rocketpool_eth1",
 			}
 			var err error
 			ecURL, err := prompt.Run()
@@ -204,8 +205,8 @@ var initCmd = &cobra.Command{
 			viper.Set("ECURL", ecURL)
 
 			prompt = promptui.Prompt{
-				Label:   "Please enter your eth2 (consensus) client URL, excluding ports.",
-				Default: "http://127.0.0.1",
+				Label:   "Please enter your eth2 (consensus) client URL, excluding ports. ()",
+				Default: "http://rocketpool_eth2",
 			}
 
 			ccURL, err := prompt.Run()
@@ -214,6 +215,28 @@ var initCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			viper.Set("CCURL", ccURL)
+
+			//If the clients are external, then the docker network should be external
+			viper.Set("IS_EXTERNAL_DOCKER_NETWORK", true)
+			color.HiWhite("Setting docker network to external: true")
+			color.HiWhite("If you would like to use external clients that are managed by docker...")
+			text := fmt.Sprintf("docker network list")
+			log.Infof(text)
+			err = c.ExecCommand(text)
+			if err != nil {
+				log.Fatal(err)
+			}
+			prompt = promptui.Prompt{
+				Label:   "Please select the name of the network to use.",
+				Default: "rocketpool_net",
+			}
+
+			dockerNetwork, err := prompt.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+			viper.Set("DOCKER_NETWORK", dockerNetwork)
 		}
 
 		err = c.WriteConfig()
