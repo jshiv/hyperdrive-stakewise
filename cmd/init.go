@@ -216,27 +216,42 @@ var initCmd = &cobra.Command{
 			}
 			viper.Set("CCURL", ccURL)
 
-			//If the clients are external, then the docker network should be external
-			viper.Set("IS_EXTERNAL_DOCKER_NETWORK", true)
-			color.HiWhite("Setting docker network to external: true")
-			color.HiWhite("If you would like to use external clients that are managed by docker...")
-			text := fmt.Sprintf("docker network list")
-			log.Infof(text)
-			err = c.ExecCommand(text)
-			if err != nil {
-				log.Fatal(err)
+			promptSelect := promptui.Select{
+				Label: "Are you connecting to your clients through an existing docker network on the same host? (i.e. rocketpool_net)",
+				Items: []string{"y", "n"},
 			}
-			prompt = promptui.Prompt{
-				Label:   "Please select the name of the network to use.",
-				Default: "rocketpool_net",
-			}
-
-			dockerNetwork, err := prompt.Run()
+			_, useExternalDockerNetwork, err := promptSelect.Run()
 			if err != nil {
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
 			}
-			viper.Set("DOCKER_NETWORK", dockerNetwork)
+
+			if useExternalDockerNetwork == "y" {
+				//If the clients are external, then the docker network should be external
+				viper.Set("IS_EXTERNAL_DOCKER_NETWORK", true)
+				color.HiWhite("Setting docker network to external: true")
+				color.HiWhite("Your avaliable docker networs are...")
+				text := fmt.Sprintf("docker network list")
+				log.Infof(text)
+				err = c.ExecCommand(text)
+				if err != nil {
+					log.Fatal(err)
+				}
+				pNetwork := promptui.Prompt{
+					Label:   "Please provide the name of the network to use",
+					Default: "rocketpool_net",
+				}
+
+				dockerNetwork, err := pNetwork.Run()
+				if err != nil {
+					fmt.Printf("Prompt failed %v\n", err)
+					log.Fatal(err)
+				}
+				viper.Set("DOCKER_NETWORK", dockerNetwork)
+			} else if useExternalDockerNetwork == "n" {
+				viper.Set("IS_EXTERNAL_DOCKER_NETWORK", false)
+				viper.Set("DOCKER_NETWORK", "hyperdrive-stakewise-net")
+			}
 		}
 
 		err = c.WriteConfig()
