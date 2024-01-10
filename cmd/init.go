@@ -192,24 +192,24 @@ var initCmd = &cobra.Command{
 			c.InternalClients = false
 			viper.Set("ECNAME", "external")
 			viper.Set("CCNAME", "external")
-			prompt := promptui.Prompt{
-				Label:   "Please enter your eth1 (execution) client URL, excluding ports.",
+			promptEth1 := promptui.Prompt{
+				Label:   "Please enter your eth1 (execution) client URL, excluding ports",
 				Default: "http://rocketpool_eth1",
 			}
 			var err error
-			ecURL, err := prompt.Run()
+			ecURL, err := promptEth1.Run()
 			if err != nil {
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
 			}
 			viper.Set("ECURL", ecURL)
 
-			prompt = promptui.Prompt{
-				Label:   "Please enter your eth2 (consensus) client URL, excluding ports. ()",
+			promptEth2 := promptui.Prompt{
+				Label:   "Please enter your eth2 (consensus) client URL, excluding ports",
 				Default: "http://rocketpool_eth2",
 			}
 
-			ccURL, err := prompt.Run()
+			ccURL, err := promptEth2.Run()
 			if err != nil {
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
