@@ -43,11 +43,11 @@ while getopts "hre:c:v:d:m:-:" option; do
                     useInternalClients=true
                     ;;
                 eth1url=*)
-                    ECURL=${OPTARG#*=}
+                    eth1url=${OPTARG#*=}
                     useInternalClients=false
                     ;;
                 eth1url)
-                    ECURL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    eth1url="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                     useInternalClients=false
                     ;;
                 eth2client=*)
@@ -59,11 +59,11 @@ while getopts "hre:c:v:d:m:-:" option; do
                     useInternalClients=true
                     ;;
                 eth2url=*)
-                    CCURL=${OPTARG#*=}
+                    eth2url=${OPTARG#*=}
                     useInternalClients=false
                     ;;
                 eth2url)
-                    CCURL="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    eth2url="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                     useInternalClients=false
                     ;;
                 data-directory=*)
