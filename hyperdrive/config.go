@@ -64,7 +64,7 @@ var (
 		ConsensusClientName:    "",
 		ConsensusClientPort:    "9000",
 		ConsensusClientAPIPort: "5052",
-		NumKeys:                "1",
+		NumKeys:                "10",
 	}
 
 	Gravita = Config{
@@ -79,7 +79,7 @@ var (
 		ConsensusClientName:    "",
 		ConsensusClientPort:    "9000",
 		ConsensusClientAPIPort: "5052",
-		NumKeys:                "1",
+		NumKeys:                "100",
 	}
 )
 
