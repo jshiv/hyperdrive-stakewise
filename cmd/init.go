@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -191,29 +192,66 @@ var initCmd = &cobra.Command{
 			c.InternalClients = false
 			viper.Set("ECNAME", "external")
 			viper.Set("CCNAME", "external")
-			prompt := promptui.Prompt{
-				Label:   "Please enter your eth1 (execution) client URL, excluding ports.",
-				Default: "http://127.0.0.1",
+			promptEth1 := promptui.Prompt{
+				Label:   "Please enter your eth1 (execution) client URL, excluding ports",
+				Default: "http://rocketpool_eth1",
 			}
 			var err error
-			ecURL, err := prompt.Run()
+			ecURL, err := promptEth1.Run()
 			if err != nil {
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
 			}
 			viper.Set("ECURL", ecURL)
 
-			prompt = promptui.Prompt{
-				Label:   "Please enter your eth2 (consensus) client URL, excluding ports.",
-				Default: "http://127.0.0.1",
+			promptEth2 := promptui.Prompt{
+				Label:   "Please enter your eth2 (consensus) client URL, excluding ports",
+				Default: "http://rocketpool_eth2",
 			}
 
-			ccURL, err := prompt.Run()
+			ccURL, err := promptEth2.Run()
 			if err != nil {
 				fmt.Printf("Prompt failed %v\n", err)
 				log.Fatal(err)
 			}
 			viper.Set("CCURL", ccURL)
+
+			promptSelect := promptui.Select{
+				Label: "Are you connecting to your clients through an existing docker network on the same host? (i.e. rocketpool_net)",
+				Items: []string{"y", "n"},
+			}
+			_, useExternalDockerNetwork, err := promptSelect.Run()
+			if err != nil {
+				fmt.Printf("Prompt failed %v\n", err)
+				log.Fatal(err)
+			}
+
+			if useExternalDockerNetwork == "y" {
+				//If the clients are external, then the docker network should be external
+				viper.Set("IS_EXTERNAL_DOCKER_NETWORK", true)
+				color.HiWhite("Setting docker network to external: true")
+				color.HiWhite("Your avaliable docker networs are...")
+				text := fmt.Sprintf("docker network list")
+				log.Infof(text)
+				err = c.ExecCommand(text)
+				if err != nil {
+					log.Fatal(err)
+				}
+				pNetwork := promptui.Prompt{
+					Label:   "Please provide the name of the network to use",
+					Default: "rocketpool_net",
+				}
+
+				dockerNetwork, err := pNetwork.Run()
+				if err != nil {
+					fmt.Printf("Prompt failed %v\n", err)
+					log.Fatal(err)
+				}
+				viper.Set("DOCKER_NETWORK", dockerNetwork)
+			} else if useExternalDockerNetwork == "n" {
+				viper.Set("IS_EXTERNAL_DOCKER_NETWORK", false)
+				viper.Set("DOCKER_NETWORK", "hyperdrive-stakewise-net")
+			}
 		}
 
 		err = c.WriteConfig()

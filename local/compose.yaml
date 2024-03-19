@@ -11,6 +11,15 @@ services:
     environment:
       DATA_DIR: /data
     env_file: "$DATA_DIR/nodeset.env"
+    networks:
+      - hyperdrive-stakewise
   ethdo:
     image: "wealdtech/ethdo"
     env_file: "$DATA_DIR/nodeset.env"
+    networks:
+      - hyperdrive-stakewise
+
+networks:
+  hyperdrive-stakewise:
+    name: $DOCKER_NETWORK
+    external: $IS_EXTERNAL_DOCKER_NETWORK

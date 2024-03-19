@@ -27,3 +27,5 @@ services:
       - "$CCAPIPORT/udp"
     depends_on:
       - $ECNAME
+    networks:
+      - hyperdrive-stakewise
